@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.albaayo">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 추가한 내용, 인터넷 사용 권한 추가 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/backlogo"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/backlogo_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        android:usesCleartextTraffic="true"
+        android:windowSoftInputMode="adjustResize|adjustPan"
+        tools:targetApi="m">
+        <service
+            android:name=".location.LocationService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="9eba05b8f9e01361ac14ceed37ce7e6b" />
+
+        <activity android:name=".SignUp" />
+        <activity android:name=".RoleSelect" />
+        <activity android:name=".AddressSearchActivity" />
+        <activity android:name=".EmployerCompanyMain" />
+        <activity android:name=".employer.WorkerInvite" />
+        <activity android:name=".LoginPage" />
+        <activity android:name=".EmployerMainPage" />
+        <activity android:name=".WorkerMainPage" />
+        <activity android:name=".WorkerCompanyMain" />
+        <activity android:name=".CompanyNoticeRegister" />
+        <activity android:name=".employer.NoticeContent" />
+        <activity android:name=".NoticeImageFull" />
+        <activity android:name=".NoticeUpdate" />
+        <activity android:name=".chat.CompanyChat" />
+        <activity android:name=".mypage.UserMyPage" />
+        <activity android:name=".personalchat.PersonalChat" />
+        <activity android:name=".option.EmployerGroupOption" />
+        <activity android:name=".option.WorkerGroupOption" />
+        <activity android:name=".location.EmployerLocationShare" />
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".WorkerCommute" />
+    </application>
+
+</manifest>
