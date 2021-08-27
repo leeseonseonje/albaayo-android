@@ -62,7 +62,6 @@ public class UserMyPage extends AppCompatActivity {
                     editor.clear();
                     editor.commit();
                     Intent intent = new Intent(UserMyPage.this, LoginPage.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
                 }

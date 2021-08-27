@@ -32,10 +32,12 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (sf.getString("role", "").equals("ROLE_WORKER")) {
                     Intent intent = new Intent(MainActivity.this, WorkerMainPage.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
                 } else if (sf.getString("role","").equals("ROLE_EMPLOYER")) {
                     Intent intent = new Intent(MainActivity.this, EmployerMainPage.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
                 } else {
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                     finish();
                 }
             }
-        }, 2000); // 2초뒤 화면전환
+        }, 1000); // 2초뒤 화면전환
     }
 }
 

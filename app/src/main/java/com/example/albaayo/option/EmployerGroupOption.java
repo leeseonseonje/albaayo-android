@@ -53,6 +53,7 @@ public class EmployerGroupOption extends AppCompatActivity {
 
         groupDeleteButton.setOnClickListener(v -> {
 
+
             new AlertDialog.Builder(EmployerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
                     .setMessage("그룹을 삭제하시겠습니까?")
                     .setNegativeButton("확인", new DialogInterface.OnClickListener() {

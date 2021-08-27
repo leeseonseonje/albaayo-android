@@ -230,10 +230,11 @@ public class WorkerCompanyMain extends AppCompatActivity {
 
             recyclerView.setVisibility(View.GONE);
             calendarLayout.setVisibility(View.VISIBLE);
-            calendarView.refreshDrawableState();
-            date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 dd일"));
-            dateText.setText(date);
-            schedule(date);
+            if (dateText.getText().toString().replace(" ", "").equals("")) {
+                date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 dd일"));
+                dateText.setText(date);
+                schedule(date);
+            }
             progressDialog.dismiss();
 
             calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {

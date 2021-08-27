@@ -152,6 +152,7 @@ public class WorkerMainPage extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<Result<List<CompanyDto>>> call, Response<Result<List<CompanyDto>>> response) {
                             if (!response.body().getData().isEmpty()) {
+                                recyclerViewSetting(response.body().getData());
                                 emptyText.setVisibility(View.GONE);
                             } else {
                                 emptyText.setVisibility(View.VISIBLE);
@@ -173,6 +174,7 @@ public class WorkerMainPage extends AppCompatActivity {
                 } else if (!response.body().getData().isEmpty()) {
                     recyclerViewSetting(response.body().getData());
                     emptyText.setVisibility(View.GONE);
+
                     if (response.body().getCount() > 0) {
                         countImage.setVisibility(View.VISIBLE);
                         countText.setVisibility(View.VISIBLE);
@@ -256,6 +258,14 @@ public class WorkerMainPage extends AppCompatActivity {
                 Toast.makeText(WorkerMainPage.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }
 

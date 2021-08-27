@@ -105,4 +105,8 @@ public class WorkerGroupOption extends AppCompatActivity {
             }).show();
         });
     }
+
+    public void payInformation() {
+        
+    }
 }
