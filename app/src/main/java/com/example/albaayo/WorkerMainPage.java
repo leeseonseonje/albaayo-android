@@ -227,8 +227,10 @@ public class WorkerMainPage extends AppCompatActivity {
                         public void onResponse(Call<List<CompanyDto>> call, Response<List<CompanyDto>> response) {
                             System.out.println("response.code() = " + response.code());
                             if (!response.body().isEmpty()) {
+                                notAcceptRecyclerViewSetting(response.body());
                                 emptyText.setVisibility(View.GONE);
                             } else {
+                                notAcceptRecyclerViewSetting(response.body());
                                 emptyText.setVisibility(View.VISIBLE);
                             }
 
@@ -246,6 +248,7 @@ public class WorkerMainPage extends AppCompatActivity {
                     notAcceptRecyclerViewSetting(response.body());
                     emptyText.setVisibility(View.GONE);
                 } else {
+                    notAcceptRecyclerViewSetting(response.body());
                     emptyText.setVisibility(View.VISIBLE);
                 }
 

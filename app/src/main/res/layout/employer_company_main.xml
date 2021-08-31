@@ -166,6 +166,7 @@
         app:layout_constraintTop_toBottomOf="@id/line2"
         app:layout_constraintBottom_toTopOf="@id/linearLayout"
         app:layout_constrainedHeight="true"
+        android:background="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
@@ -173,7 +174,7 @@
             android:id="@+id/calendar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#2F5597"
+            android:theme="@style/Theme.AppCompat.Light"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

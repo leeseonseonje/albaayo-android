@@ -77,6 +77,9 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                             public void onResponse(Call<Void> call, Response<Void> response) {
                                 list.remove(position);
                                 notifyDataSetChanged();
+                                if (list.size() == 0) {
+                                    emptyText.setVisibility(View.VISIBLE);
+                                }
                             }
 
                             @Override
@@ -87,6 +90,9 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                     } else {
                         list.remove(position);
                         notifyDataSetChanged();
+                        if (list.size() == 0) {
+                            emptyText.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
 
@@ -116,6 +122,9 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                             public void onResponse(Call<Void> call, Response<Void> response) {
                                 list.remove(position);
                                 notifyDataSetChanged();
+                                if (list.size() == 0) {
+                                    emptyText.setVisibility(View.VISIBLE);
+                                }
                             }
 
                             @Override
@@ -126,6 +135,9 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                     } else {
                         list.remove(position);
                         notifyDataSetChanged();
+                        if (list.size() == 0) {
+                            emptyText.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
 
@@ -135,10 +147,6 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                 }
             });
         });
-
-        if (list.size() == 0) {
-            emptyText.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
