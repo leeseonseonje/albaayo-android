@@ -240,7 +240,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
             calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
                 progressDialog.show();
                 date = String.format("%d년 %d월 %d일", year, month + 1, dayOfMonth);
-                System.out.println("dayOfMonth = " + dayOfMonth);
                 dateText.setText(date);
                 schedule(date);
                 System.out.println(date);

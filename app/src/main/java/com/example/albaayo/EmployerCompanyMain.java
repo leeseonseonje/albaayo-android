@@ -257,16 +257,16 @@ public class EmployerCompanyMain extends AppCompatActivity {
 
             recyclerView.setVisibility(View.GONE);
             calendarLayout.setVisibility(View.VISIBLE);
-            date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 dd일"));
-
-            dateText.setText(date);
-            schedule(date);
+            if (dateText.getText().toString().replace(" ", "").equals("")) {
+                date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 dd일"));
+                dateText.setText(date);
+                schedule(date);
+            }
             progressDialog.dismiss();
 
             calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
                 progressDialog.show();
                 date = String.format("%d년 %d월 %d일", year, month + 1, dayOfMonth);
-                System.out.println("dayOfMonth = " + dayOfMonth);
                 dateText.setText(date);
                 schedule(date);
                 System.out.println(date);
