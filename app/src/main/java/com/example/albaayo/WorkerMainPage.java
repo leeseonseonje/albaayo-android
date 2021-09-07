@@ -28,6 +28,7 @@ import com.example.http.dto.ResponseLoginDto;
 import com.example.http.dto.Result;
 import com.example.list.accept_company.CompanyListAdapter;
 import com.example.list.accept_company.NotAcceptCompanyListAdapter;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.List;
 
@@ -73,6 +74,8 @@ public class WorkerMainPage extends AppCompatActivity {
         Id.getInstance().setUserId(sf.getString("userId", ""));
         Id.getInstance().setName(sf.getString("name", ""));
         Id.getInstance().setRole(sf.getString("role", ""));
+
+        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
 
         initData();
 

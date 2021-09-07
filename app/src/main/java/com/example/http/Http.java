@@ -30,10 +30,11 @@ import static android.content.Context.MODE_PRIVATE;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class Http {
-
+    //ec2-3-36-169-119.ap-northeast-2.compute.amazonaws.com
+    //121.55.67.25
     private Retrofit retrofit;
     private ApiService apiService;
-    public static final String URL = "192.168.0.4";
+    public static final String URL = "121.55.67.25";
     public static Http Http = new Http();
     private Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new JsonDeserializer<LocalDateTime>() {
         @RequiresApi(api = Build.VERSION_CODES.O)

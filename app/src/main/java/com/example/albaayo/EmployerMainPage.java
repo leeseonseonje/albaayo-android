@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -37,6 +38,7 @@ import com.example.http.dto.Id;
 import com.example.http.dto.RequestCompanyDto;
 import com.example.http.dto.ResponseLoginDto;
 import com.example.list.accept_company.CompanyListAdapter;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,9 +46,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.SneakyThrows;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,6 +71,7 @@ public class EmployerMainPage extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private TextView emptyText;
     private Button myPageButton;
+    String absolutePath;
     private ResponseLoginDto data;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
@@ -96,6 +103,18 @@ public class EmployerMainPage extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
         progressDialog.setMessage("로딩중!");
+
+        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w("FirebaseSettingEx", "getInstanceId failed", task.getException());
+                return;
+            }
+
+            // 토큰을 읽고, 텍스트 뷰에 보여주기
+            String token = task.getResult();
+            System.out.println("token = " + token);
+        });
 
         emptyText = findViewById(R.id.empty_list);
         address = findViewById(R.id.input_address);
@@ -141,13 +160,23 @@ public class EmployerMainPage extends AppCompatActivity {
                     if (!numberText.getText().toString().replace(" ", "").equals("")) {
                         if (imageBytes != null) {
                             progressDialog.show();
-                            String picture = Base64.encodeToString(imageBytes, 0);
-                            RequestCompanyDto request = RequestCompanyDto.builder().name(nameText.getText().toString())
-                                    .location(address.getText().toString() + " " + locationText.getText().toString())
-                                    .businessRegistrationNumber(numberText.getText().toString()).picture(picture).build();
+//                            String picture = Base64.encodeToString(imageBytes, 0);
+//                            RequestCompanyDto request = RequestCompanyDto.builder().name(nameText.getText().toString())
+//                                    .location(address.getText().toString() + " " + locationText.getText().toString())
+//                                    .businessRegistrationNumber(numberText.getText().toString()).picture(picture).build();
+                            File file = new File(absolutePath);
+
+                            ArrayList<MultipartBody.Part> list = new ArrayList<>();
+                            list.add(MultipartBody.Part.createFormData("name", nameText.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("location", address.getText().toString()
+                                    + " " + locationText.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("businessRegistrationNumber", numberText.getText().toString()));
+                            RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
+                            list.add(MultipartBody.Part.createFormData("image", file.getName(), fileBody));
+
 
                             Call<CompanyDto> call = Http.getInstance().getApiService()
-                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), request);
+                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
                             call.enqueue(new Callback<CompanyDto>() {
                                 @SneakyThrows
                                 @Override
@@ -158,12 +187,13 @@ public class EmployerMainPage extends AppCompatActivity {
                                         editor.commit();
 
                                         Call<CompanyDto> reCall = Http.getInstance().getApiService()
-                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), request);
+                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
 
                                         reCall.enqueue(new Callback<CompanyDto>() {
                                             @Override
                                             public void onResponse(Call<CompanyDto> call, Response<CompanyDto> response) {
                                                 if (response.code() != 500) {
+                                                    System.out.println("response = " + response.body().getPicture());
                                                     Intent intent = getIntent();
                                                     finish();
                                                     startActivity(intent);
@@ -186,6 +216,7 @@ public class EmployerMainPage extends AppCompatActivity {
                                             }
                                         });
                                     } else if (response.code() != 500) {
+                                        System.out.println("response = " + response.body().getPicture());
                                         Intent intent = getIntent();
                                         finish();
                                         startActivity(intent);
@@ -212,7 +243,7 @@ public class EmployerMainPage extends AppCompatActivity {
                                     .location(address.getText().toString() + " " + locationText.getText().toString())
                                     .businessRegistrationNumber(numberText.getText().toString()).build();
                             Call<CompanyDto> call = Http.getInstance().getApiService()
-                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), request);
+                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), null);
                             call.enqueue(new Callback<CompanyDto>() {
                                 @SneakyThrows
                                 @Override
@@ -223,7 +254,7 @@ public class EmployerMainPage extends AppCompatActivity {
                                         editor.commit();
 
                                         Call<CompanyDto> reCall = Http.getInstance().getApiService()
-                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), request);
+                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), null);
 
                                         reCall.enqueue(new Callback<CompanyDto>() {
                                             @Override
@@ -319,7 +350,7 @@ public class EmployerMainPage extends AppCompatActivity {
             if(resultCode == RESULT_OK)
             {
                 ExifInterface exif = null;
-                String absolutePath = getRealPathFromURI(this, data.getData());
+                absolutePath = getRealPathFromURI(this, data.getData());
                 try{
                     exif = new ExifInterface(absolutePath);
                 }catch(Exception e) {

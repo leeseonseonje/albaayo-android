@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/backlogo"
@@ -26,7 +27,16 @@
         <service
             android:name=".location.LocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+        </service>
+
+        <service
+            android:name=".fcm.Fcm"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.kakao.sdk.AppKey"
@@ -60,5 +70,4 @@
         </activity>
         <activity android:name=".WorkerCommute" />
     </application>
-
 </manifest>

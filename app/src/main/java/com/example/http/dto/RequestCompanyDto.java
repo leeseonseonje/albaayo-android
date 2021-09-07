@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import okhttp3.MultipartBody;
+import okhttp3.ResponseBody;
+import retrofit2.http.Multipart;
 
 @Getter
 @Setter
@@ -16,5 +19,5 @@ public class RequestCompanyDto {
     private String name;
     private String location;
     private String businessRegistrationNumber;
-    private String picture;
+    private MultipartBody.Part image;
 }
