@@ -16,7 +16,6 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.http.Http;
 import com.example.http.dto.RequestSignupDto;
 import com.example.http.dto.ResponseSignupDto;
 import com.example.http.dto.ValidateDuplicateCheckMessage;

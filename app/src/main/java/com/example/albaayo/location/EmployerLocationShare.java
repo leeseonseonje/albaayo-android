@@ -19,7 +19,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.albaayo.R;
-import com.example.http.Http;
 
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapCircle;
@@ -33,9 +32,6 @@ import java.util.List;
 import java.util.Locale;
 
 import lombok.SneakyThrows;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class EmployerLocationShare extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener {
 

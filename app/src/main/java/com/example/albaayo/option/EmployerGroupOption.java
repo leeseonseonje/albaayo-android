@@ -15,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
-import com.example.albaayo.WorkerCommute;
-import com.example.http.Http;
 import com.example.http.dto.Id;
 
 import retrofit2.Call;

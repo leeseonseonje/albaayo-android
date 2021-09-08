@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.company_notice.CompanyNoticeRegisterAdapter;
-import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.ImageDto;
 import com.example.http.dto.NoticeImageDto;

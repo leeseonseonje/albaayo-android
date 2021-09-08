@@ -13,10 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
 import com.example.albaayo.WorkerMainPage;
-import com.example.http.Http;
 import com.example.http.dto.Id;
 
 import retrofit2.Call;

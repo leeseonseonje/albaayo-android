@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albaayo.mypage.UserMyPage;
-import com.example.http.Http;
 import com.example.http.dto.CompanyDto;
 import com.example.http.dto.Id;
 import com.example.http.dto.ResponseLoginDto;

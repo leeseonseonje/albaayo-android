@@ -2,7 +2,6 @@ package com.example.albaayo;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,7 +27,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.albaayo.location.LocationService;
-import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.RequestCommuteDto;
 
@@ -48,7 +45,6 @@ import lombok.SneakyThrows;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.http.HTTP;
 
 public class WorkerCommute extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener {
 

@@ -13,15 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albaayo.R;
-import com.example.albaayo.WorkerCommute;
 import com.example.albaayo.location.EmployerLocationShare;
 import com.example.albaayo.location.LocationDto;
-import com.example.albaayo.location.LocationService;
-import com.example.http.Http;
 import com.example.http.dto.Id;
-import com.example.http.dto.IdAndName;
 import com.example.http.dto.ResponseCompanyWorkerListDto;
-import com.example.list.accept_company.CompanyListViewHolder;
 
 import java.util.List;
 

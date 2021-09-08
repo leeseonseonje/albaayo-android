@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albaayo.R;
-import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
