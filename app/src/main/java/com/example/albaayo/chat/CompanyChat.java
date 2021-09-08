@@ -85,79 +85,49 @@ public class CompanyChat  extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.company_chat);
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-        progressDialog.show();
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        Intent intent = getIntent();
-        companyId = intent.getLongExtra("companyId", 0);
-        companyName = intent.getStringExtra("companyName");
-        headerName = findViewById(R.id.header_name_text);
-        headerName.setText(companyName);
-        mRecyclerView = findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-        Call<List<ResponseChatMessage>> call = Http.getInstance().getApiService()
-                .companyChatContents(Id.getInstance().getAccessToken(), companyId);
-        call.enqueue(new Callback<List<ResponseChatMessage>>() {
-            @Override
-            public void onResponse(Call<List<ResponseChatMessage>> call, Response<List<ResponseChatMessage>> response) {
-                if (response.code() == 401) {
-                    Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                    editor.putString("accessToken", response.headers().get("Authorization"));
-                    editor.commit();
+        initData();
 
-                    Call<List<ResponseChatMessage>> reCall = Http.getInstance().getApiService()
-                            .companyChatContents(Id.getInstance().getAccessToken(), companyId);
-                    reCall.enqueue(new Callback<List<ResponseChatMessage>>() {
-                        @Override
-                        public void onResponse(Call<List<ResponseChatMessage>> call, Response<List<ResponseChatMessage>> response) {
-                            mDataSet = response.body();
+        chatContentsApi();
 
-                            for (int i = 0; i < mDataSet.size(); i++) {
-                                if (!date.equals(mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko"))))) {
-                                    mDataSet.add(i, ResponseChatMessage.builder().time(mDataSet.get(i).getTime()).build());
-                                    date = mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")));
-                                }
-                            }
+        webSocketConnection();
 
-                            mAdapter = new ChatAdapter(mDataSet);
-                            mAdapter = new ChatAdapter(mDataSet);
-                            mRecyclerView.setAdapter(mAdapter);
-                            mRecyclerView.scrollToPosition(mDataSet.size() - 1);
-                        }
+        sendMessage();
 
-                        @Override
-                        public void onFailure(Call<List<ResponseChatMessage>> call, Throwable t) {
+        back();
+        progressDialog.dismiss();
+    }
 
-                        }
-                    });
-                } else {
-                    mDataSet = response.body();
+    private void back() {
+        back = findViewById(R.id.chatting_back_image_button);
+        back.setOnClickListener(v -> {
+            finish();
+        });
+    }
 
-                    for (int i = 0; i < mDataSet.size(); i++) {
-                        if (!date.equals(mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko"))))) {
-                            mDataSet.add(i, ResponseChatMessage.builder().time(mDataSet.get(i).getTime()).build());
-                            date = mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")));
-                        }
-                    }
-
-                    mAdapter = new ChatAdapter(mDataSet);
-                    mAdapter = new ChatAdapter(mDataSet);
-                    mRecyclerView.setAdapter(mAdapter);
-                    mRecyclerView.scrollToPosition(mDataSet.size() - 1);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<ResponseChatMessage>> call, Throwable t) {
-                System.out.println("t.getMessage() = " + t.getMessage());
-
+    private void sendMessage() {
+        chatContent = findViewById(R.id.chatEdit);
+        sendButton = findViewById(R.id.chatSend);
+        sendButton.setOnClickListener(v -> {
+            if (!chatContent.getText().toString().replace(" ", "").equals("")) {
+                RequestChattingMessage chattingMessage = RequestChattingMessage.builder().memberId(Id.getInstance().getId()).companyId(companyId)
+                        .message(chatContent.getText().toString()).name(Id.getInstance().getName()).build();
+                compositeDisposable.add(mStompClient.send("/send/company", mGson.toJson(chattingMessage))
+                        .compose(applySchedulers())
+                        .subscribe(() -> {
+                            Log.d(TAG, "STOMP echo send successfully =>");
+                        }, throwable -> {
+                            Log.e(TAG, "Error send STOMP echo", throwable);
+                            toast(throwable.getMessage());
+                        }));
+                chatContent.setText("");
+            } else {
+                toast("메시지를 입력해 주세요.");
             }
         });
+    }
 
+    private void webSocketConnection() {
         mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "ws://" + Http.URL
                 + ":" + SERVER_PORT + "/example-endpoint/websocket");
 
@@ -221,37 +191,88 @@ public class CompanyChat  extends AppCompatActivity {
 //                });
 
 
-
         compositeDisposable.add(dispTopic);
 //        compositeDisposable.add(dispTopicB);
 
         mStompClient.connect(headers);
+    }
 
-        chatContent = findViewById(R.id.chatEdit);
-        sendButton = findViewById(R.id.chatSend);
-        sendButton.setOnClickListener(v -> {
-            if (!chatContent.getText().toString().replace(" ", "").equals("")) {
-                RequestChattingMessage chattingMessage = RequestChattingMessage.builder().memberId(Id.getInstance().getId()).companyId(companyId)
-                        .message(chatContent.getText().toString()).name(Id.getInstance().getName()).build();
-                compositeDisposable.add(mStompClient.send("/send/company", mGson.toJson(chattingMessage))
-                        .compose(applySchedulers())
-                        .subscribe(() -> {
-                            Log.d(TAG, "STOMP echo send successfully =>");
-                        }, throwable -> {
-                            Log.e(TAG, "Error send STOMP echo", throwable);
-                            toast(throwable.getMessage());
-                        }));
-                chatContent.setText("");
-            } else {
-                toast("메시지를 입력해 주세요.");
+    private void chatContentsApi() {
+        Call<List<ResponseChatMessage>> call = Http.getInstance().getApiService()
+                .companyChatContents(Id.getInstance().getAccessToken(), companyId);
+        call.enqueue(new Callback<List<ResponseChatMessage>>() {
+            @Override
+            public void onResponse(Call<List<ResponseChatMessage>> call, Response<List<ResponseChatMessage>> response) {
+                if (response.code() == 401) {
+                    Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                    editor.putString("accessToken", response.headers().get("Authorization"));
+                    editor.commit();
+
+                    Call<List<ResponseChatMessage>> reCall = Http.getInstance().getApiService()
+                            .companyChatContents(Id.getInstance().getAccessToken(), companyId);
+                    reCall.enqueue(new Callback<List<ResponseChatMessage>>() {
+                        @Override
+                        public void onResponse(Call<List<ResponseChatMessage>> call, Response<List<ResponseChatMessage>> response) {
+                            mDataSet = response.body();
+
+                            for (int i = 0; i < mDataSet.size(); i++) {
+                                if (!date.equals(mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko"))))) {
+                                    mDataSet.add(i, ResponseChatMessage.builder().time(mDataSet.get(i).getTime()).build());
+                                    date = mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")));
+                                }
+                            }
+
+                            mAdapter = new ChatAdapter(mDataSet);
+                            mAdapter = new ChatAdapter(mDataSet);
+                            mRecyclerView.setAdapter(mAdapter);
+                            mRecyclerView.scrollToPosition(mDataSet.size() - 1);
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<ResponseChatMessage>> call, Throwable t) {
+
+                        }
+                    });
+                } else {
+                    mDataSet = response.body();
+
+                    for (int i = 0; i < mDataSet.size(); i++) {
+                        if (!date.equals(mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko"))))) {
+                            mDataSet.add(i, ResponseChatMessage.builder().time(mDataSet.get(i).getTime()).build());
+                            date = mDataSet.get(i).getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.forLanguageTag("ko")));
+                        }
+                    }
+
+                    mAdapter = new ChatAdapter(mDataSet);
+                    mAdapter = new ChatAdapter(mDataSet);
+                    mRecyclerView.setAdapter(mAdapter);
+                    mRecyclerView.scrollToPosition(mDataSet.size() - 1);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ResponseChatMessage>> call, Throwable t) {
+                System.out.println("t.getMessage() = " + t.getMessage());
+
             }
         });
+    }
 
-        back = findViewById(R.id.chatting_back_image_button);
-        back.setOnClickListener(v -> {
-            finish();
-        });
-        progressDialog.dismiss();
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+        progressDialog.show();
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        Intent intent = getIntent();
+        companyId = intent.getLongExtra("companyId", 0);
+        companyName = intent.getStringExtra("companyName");
+        headerName = findViewById(R.id.header_name_text);
+        headerName.setText(companyName);
+        mRecyclerView = findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     }
 
     public void disconnectStomp(View view) {

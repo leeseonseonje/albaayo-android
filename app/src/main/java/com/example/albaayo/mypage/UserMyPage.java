@@ -37,23 +37,11 @@ public class UserMyPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_page);
 
-        roleText = findViewById(R.id.my_role);
-        usernameText = findViewById(R.id.my_name);
-        userIdText = findViewById(R.id.my_id);
+        initData();
+        logout();
+    }
 
-        if (Id.getInstance().getRole().equals("ROLE_EMPLOYER")) {
-            roleText.setText("사장님");
-        } else {
-            roleText.setText("알바생");
-        }
-
-        usernameText.setText(Id.getInstance().getName());
-        userIdText.setText(Id.getInstance().getUserId());
-
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
-
-        logoutButton = findViewById(R.id.logout);
+    private void logout() {
         logoutButton.setOnClickListener(v -> {
             Call<Void> logout = Http.getInstance().getApiService().logout(Id.getInstance().getId());
             logout.enqueue(new Callback<Void>() {
@@ -72,7 +60,25 @@ public class UserMyPage extends AppCompatActivity {
                 }
             });
         });
+    }
 
+    private void initData() {
+        roleText = findViewById(R.id.my_role);
+        usernameText = findViewById(R.id.my_name);
+        userIdText = findViewById(R.id.my_id);
 
+        if (Id.getInstance().getRole().equals("ROLE_EMPLOYER")) {
+            roleText.setText("사장님");
+        } else {
+            roleText.setText("알바생");
+        }
+
+        usernameText.setText(Id.getInstance().getName());
+        userIdText.setText(Id.getInstance().getUserId());
+
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+
+        logoutButton = findViewById(R.id.logout);
     }
 }

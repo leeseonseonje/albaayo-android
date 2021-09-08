@@ -12,10 +12,10 @@ import android.os.IBinder;
 import androidx.annotation.RequiresApi;
 
 import com.example.albaayo.GpsTracker;
-import com.example.albaayo.WorkerCommute;
 import com.example.http.Http;
 import com.example.http.dto.Id;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -86,50 +86,54 @@ public class LocationService extends Service {
                     @Override
                     public void run() {
 
-                        double latitude = gpsTracker.getLatitude();
-                        double longitude = gpsTracker.getLongitude();
-
-                        List<Address> fromLocation = geocoder.getFromLocation(latitude, longitude, 1);
-                        Address address = fromLocation.get(0);
-                        String add = address.getAddressLine(0);
-                        LocationSaveDto locationSaveDto = LocationSaveDto.builder()
-                                .memberId(Id.getInstance().getId())
-                                .companyId(companyId)
-                                .location(add).build();
-                        Call<Void> call = Http.getInstance().getApiService()
-                                .saveLocation(Id.getInstance().getAccessToken(), locationSaveDto);
-                        call.enqueue(new Callback<Void>() {
-                            @SneakyThrows
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response) {
-                                if (response.code() == 401) {
-                                    Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                                    editor.putString("accessToken", response.headers().get("Authorization"));
-                                    editor.commit();
-
-                                    Call<Void> reCall = Http.getInstance().getApiService()
-                                            .saveLocation(Id.getInstance().getAccessToken(), locationSaveDto);
-                                    reCall.enqueue(new Callback<Void>() {
-                                        @Override
-                                        public void onResponse(Call<Void> call, Response<Void> response) {
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<Void> call, Throwable t) {
-                                        }
-                                    });
-                                }
-                            }
-
-                            @SneakyThrows
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t) {
-                            }
-                        });
+                        locationService();
                     }
                 });
                 Thread.sleep(10000);
             }
         }
+    }
+
+    private void locationService() throws IOException {
+        double latitude = gpsTracker.getLatitude();
+        double longitude = gpsTracker.getLongitude();
+
+        List<Address> fromLocation = geocoder.getFromLocation(latitude, longitude, 1);
+        Address address = fromLocation.get(0);
+        String add = address.getAddressLine(0);
+        LocationSaveDto locationSaveDto = LocationSaveDto.builder()
+                .memberId(Id.getInstance().getId())
+                .companyId(companyId)
+                .location(add).build();
+        Call<Void> call = Http.getInstance().getApiService()
+                .saveLocation(Id.getInstance().getAccessToken(), locationSaveDto);
+        call.enqueue(new Callback<Void>() {
+            @SneakyThrows
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.code() == 401) {
+                    Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                    editor.putString("accessToken", response.headers().get("Authorization"));
+                    editor.commit();
+
+                    Call<Void> reCall = Http.getInstance().getApiService()
+                            .saveLocation(Id.getInstance().getAccessToken(), locationSaveDto);
+                    reCall.enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                        }
+                    });
+                }
+            }
+
+            @SneakyThrows
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+            }
+        });
     }
 }

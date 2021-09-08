@@ -64,28 +64,69 @@ public class NoticeContent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.notice_content);
 
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
+        initData();
 
-        Intent intent = getIntent();
-        companyName = intent.getStringExtra("companyName");
-        noticeId = intent.getLongExtra("noticeId", 0);
-        header = findViewById(R.id.header_name_text);
-        header.setText(companyName);
-
-        title = findViewById(R.id.notice_title);
-        name = findViewById(R.id.notice_name);
-        date = findViewById(R.id.notice_date);
-        contents = findViewById(R.id.notice_content);
-
-        update = findViewById(R.id.notice_update_button);
-        delete = findViewById(R.id.notice_delete_button);
-
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
+        noticeContent();
 
 
+        updateButton();
 
+        noticeDelete();
+    }
+
+    private void noticeDelete() {
+        delete.setOnClickListener(v -> {
+            progressDialog.show();
+            Call<Void> call1 = Http.getInstance().getApiService()
+                    .removeNotice(Id.getInstance().getAccessToken(), noticeId);
+            call1.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.code() == 401) {
+                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                        editor.putString("accessToken", response.headers().get("Authorization"));
+                        editor.commit();
+
+                        Call<Void> reCall1 = Http.getInstance().getApiService()
+                                .removeNotice(Id.getInstance().getAccessToken(), noticeId);
+                        reCall1.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                Toast.makeText(NoticeContent.this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                                finish();
+                                progressDialog.dismiss();
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+
+                            }
+                        });
+                    } else {
+                        Toast.makeText(NoticeContent.this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
+                        finish();
+                        progressDialog.dismiss();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(NoticeContent.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void updateButton() {
+        update.setOnClickListener(v -> {
+            Intent i = new Intent(NoticeContent.this, NoticeUpdate.class);
+            i.putExtra("companyName", companyName);
+            i.putExtra("noticeId", noticeId);
+            startActivity(i);
+        });
+    }
+
+    private void noticeContent() {
         Call<ResponseNoticeDto> call = Http.getInstance().getApiService()
                 .noticeContent(Id.getInstance().getAccessToken(), noticeId);
         progressDialog.show();
@@ -146,55 +187,28 @@ public class NoticeContent extends AppCompatActivity {
                 Toast.makeText(NoticeContent.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
 
-        update.setOnClickListener(v -> {
-            Intent i = new Intent(NoticeContent.this, NoticeUpdate.class);
-            i.putExtra("companyName", companyName);
-            i.putExtra("noticeId", noticeId);
-            startActivity(i);
-        });
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
 
-        delete.setOnClickListener(v -> {
-            progressDialog.show();
-            Call<Void> call1 = Http.getInstance().getApiService()
-                    .removeNotice(Id.getInstance().getAccessToken(), noticeId);
-            call1.enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.code() == 401) {
-                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                        editor.putString("accessToken", response.headers().get("Authorization"));
-                        editor.commit();
+        Intent intent = getIntent();
+        companyName = intent.getStringExtra("companyName");
+        noticeId = intent.getLongExtra("noticeId", 0);
+        header = findViewById(R.id.header_name_text);
+        header.setText(companyName);
 
-                        Call<Void> reCall1 = Http.getInstance().getApiService()
-                                .removeNotice(Id.getInstance().getAccessToken(), noticeId);
-                        reCall1.enqueue(new Callback<Void>() {
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response) {
-                                Toast.makeText(NoticeContent.this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
-                                finish();
-                                progressDialog.dismiss();
-                            }
+        title = findViewById(R.id.notice_title);
+        name = findViewById(R.id.notice_name);
+        date = findViewById(R.id.notice_date);
+        contents = findViewById(R.id.notice_content);
 
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t) {
-
-                            }
-                        });
-                    } else {
-                        Toast.makeText(NoticeContent.this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
-                        finish();
-                        progressDialog.dismiss();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Toast.makeText(NoticeContent.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
+        update = findViewById(R.id.notice_update_button);
+        delete = findViewById(R.id.notice_delete_button);
     }
 
     @Override

@@ -77,177 +77,36 @@ public class WorkerCommute extends AppCompatActivity implements MapView.CurrentL
         setContentView(R.layout.worker_commute);
         checkPermission();
 
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
+        initData();
 
-//        progressDialog.show();
-        Intent intent = getIntent();
-        companyId = intent.getLongExtra("companyId", 0);
-        companyName = intent.getStringExtra("companyName");
-        companyLocation = intent.getStringExtra("companyLocation");
-        TextView header = findViewById(R.id.header_name_text);
-        header.setText(companyName);
-        //지도를 띄우자
-        // java code
-        mapView = new MapView(this);
-        mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
-        mapViewContainer.addView(mapView);
-        mapView.setMapViewEventListener(this);
-        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
-        if (!checkLocationServicesStatus()) {
-            showDialogForLocationServiceSetting();
-        } else {
-            checkRunTimePermission();
-        }
-
-        gpsTracker = new GpsTracker(WorkerCommute.this);
-
-        latitude = gpsTracker.getLatitude();
-        longitude = gpsTracker.getLongitude();
-
-        geocoder = new Geocoder(this, Locale.getDefault());
-        fromLocationName = geocoder.getFromLocationName(companyLocation, 1);
-        companyAddress = fromLocationName.get(0);
-        companyLatitude = companyAddress.getLatitude();
-        companyLongitude = companyAddress.getLongitude();
-
-        MapPoint point = MapPoint.mapPointWithGeoCoord(companyLatitude, companyLongitude);
-
-        MapPOIItem myLocation = new MapPOIItem();
-        myLocation.setItemName(companyName);
-        myLocation.setTag(0);
-        myLocation.setMapPoint(point);
-        myLocation.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 파란색 마커 모양
-        myLocation.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 빨간색 마커 모양으로 변경
-        mapView.addPOIItem(myLocation);
-
-        MapCircle circle = new MapCircle(
-                MapPoint.mapPointWithGeoCoord(companyLatitude, companyLongitude), // center
-                50, // radius
-                Color.argb(128, 255, 0, 0), // strokeColor
-                Color.argb(128, 255, 255, 0) // fillColor
-        );
-        circle.setTag(5678);
-        mapView.addCircle(circle);
-
-        MapPointBounds[] mapPointBoundsArray = { circle.getBound() };
-        MapPointBounds mapPointBounds = new MapPointBounds(mapPointBoundsArray);
-        int padding = 80; // px
-        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));
+        mapCircle();
 
 
-        Button goToWorkButton = (Button) findViewById(R.id.go_to_work);
-        goToWorkButton.setOnClickListener(v -> {
+        goToWork();
 
-            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                    .setMessage("출근하시겠습니까?")
-                    .setNegativeButton("확인", new DialogInterface.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        public void onClick(DialogInterface dialog, int which){
+        offWork();
 
-                            if (latitude + 0.003 >= companyLatitude && latitude - 0.003 <= companyLatitude) {
-                                if (longitude + 0.003 >= companyLongitude && longitude - 0.003 <= companyLongitude) {
-                                    RequestCommuteDto request = RequestCommuteDto.builder().workerId(Id.getInstance().getId()).companyId(companyId).build();
-                                    Call<Void> call = Http.getInstance().getApiService()
-                                            .goToWork(Id.getInstance().getAccessToken(), request);
-                                    call.enqueue(new Callback<Void>() {
-                                        @SneakyThrows
-                                        @Override
-                                        public void onResponse(Call<Void> call, Response<Void> response) {
-                                            if (response.code() == 401) {
-                                                Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                                                editor.putString("accessToken", response.headers().get("Authorization"));
-                                                editor.commit();
+//        goToWorkButton.setOnClickListener(new View.OnClickListener()
+//        {
+//            @Override
+//            public void onClick(View arg0)
+//            {
+//
+//                gpsTracker = new GpsTracker(WorkerCommute.this);
+//
+//                double latitude = gpsTracker.getLatitude();
+//                double longitude = gpsTracker.getLongitude();
+//
+//                String address = getCurrentAddress(latitude, longitude);
+////                textview_address.setText(address);
+//
+//                Toast.makeText(WorkerCommute.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
+//
+//            }
+//        });
+    }
 
-                                                Call<Void> reCall = Http.getInstance().getApiService()
-                                                        .goToWork(Id.getInstance().getAccessToken(), request);
-                                                reCall.enqueue(new Callback<Void>() {
-                                                    @Override
-                                                    public void onResponse(Call<Void> call, Response<Void> response) {
-                                                        if (response.code() != 500) {
-                                                            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                                                    .setMessage("출근 완료")
-                                                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                                                        public void onClick(DialogInterface dialog, int which) {
-                                                                            Intent startLocationService =
-                                                                                    new Intent(WorkerCommute.this, LocationService.class);
-                                                                            startLocationService.putExtra("companyId", companyId);
-                                                                            startService(startLocationService);
-                                                                        }
-                                                                    })
-                                                                    .show();
-                                                        } else {
-                                                            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                                                    .setMessage("퇴근을 하지 않았습니다.")
-                                                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                                                        public void onClick(DialogInterface dialog, int which){
-                                                                        }
-                                                                    })
-                                                                    .show();
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(Call<Void> call, Throwable t) {
-                                                        Toast.makeText(WorkerCommute.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                            } else if (response.code() != 500) {
-                                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                                        .setMessage("출근 완료")
-                                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                Intent startLocationService =
-                                                                        new Intent(WorkerCommute.this, LocationService.class);
-                                                                startLocationService.putExtra("companyId", companyId);
-                                                                startService(startLocationService);
-                                                            }
-                                                        })
-                                                        .show();
-                                            } else {
-                                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                                        .setMessage("퇴근을 하지 않았습니다.")
-                                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                                            public void onClick(DialogInterface dialog, int which){
-                                                            }
-                                                        })
-                                                        .show();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<Void> call, Throwable t) {
-                                            Toast.makeText(WorkerCommute.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                } else {
-                                    new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                            .setMessage("위치가 맞지 않습니다.")
-                                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which){
-                                                }
-                                            })
-                                            .show();
-                                }
-                            } else {
-                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                        .setMessage("위치가 맞지 않습니다.")
-                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which){
-                                            }
-                                        })
-                                        .show();
-                            }
-                        }
-                    })
-                    .setPositiveButton("취소", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    })
-                    .show();
-        });
-
+    private void offWork() {
         Button offWorkButton = findViewById(R.id.off_work);
         offWorkButton.setOnClickListener(v -> {
 
@@ -421,26 +280,185 @@ public class WorkerCommute extends AppCompatActivity implements MapView.CurrentL
                     })
                     .show();
         });
-
-//        goToWorkButton.setOnClickListener(new View.OnClickListener()
-//        {
-//            @Override
-//            public void onClick(View arg0)
-//            {
-//
-//                gpsTracker = new GpsTracker(WorkerCommute.this);
-//
-//                double latitude = gpsTracker.getLatitude();
-//                double longitude = gpsTracker.getLongitude();
-//
-//                String address = getCurrentAddress(latitude, longitude);
-////                textview_address.setText(address);
-//
-//                Toast.makeText(WorkerCommute.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
-//
-//            }
-//        });
     }
+
+    private void goToWork() {
+        Button goToWorkButton = (Button) findViewById(R.id.go_to_work);
+        goToWorkButton.setOnClickListener(v -> {
+
+            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                    .setMessage("출근하시겠습니까?")
+                    .setNegativeButton("확인", new DialogInterface.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        public void onClick(DialogInterface dialog, int which){
+
+                            if (latitude + 0.003 >= companyLatitude && latitude - 0.003 <= companyLatitude) {
+                                if (longitude + 0.003 >= companyLongitude && longitude - 0.003 <= companyLongitude) {
+                                    RequestCommuteDto request = RequestCommuteDto.builder().workerId(Id.getInstance().getId()).companyId(companyId).build();
+                                    Call<Void> call = Http.getInstance().getApiService()
+                                            .goToWork(Id.getInstance().getAccessToken(), request);
+                                    call.enqueue(new Callback<Void>() {
+                                        @SneakyThrows
+                                        @Override
+                                        public void onResponse(Call<Void> call, Response<Void> response) {
+                                            if (response.code() == 401) {
+                                                Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                                                editor.putString("accessToken", response.headers().get("Authorization"));
+                                                editor.commit();
+
+                                                Call<Void> reCall = Http.getInstance().getApiService()
+                                                        .goToWork(Id.getInstance().getAccessToken(), request);
+                                                reCall.enqueue(new Callback<Void>() {
+                                                    @Override
+                                                    public void onResponse(Call<Void> call, Response<Void> response) {
+                                                        if (response.code() != 500) {
+                                                            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                                    .setMessage("출근 완료")
+                                                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                            Intent startLocationService =
+                                                                                    new Intent(WorkerCommute.this, LocationService.class);
+                                                                            startLocationService.putExtra("companyId", companyId);
+                                                                            startService(startLocationService);
+                                                                        }
+                                                                    })
+                                                                    .show();
+                                                        } else {
+                                                            new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                                    .setMessage("퇴근을 하지 않았습니다.")
+                                                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                                        public void onClick(DialogInterface dialog, int which){
+                                                                        }
+                                                                    })
+                                                                    .show();
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<Void> call, Throwable t) {
+                                                        Toast.makeText(WorkerCommute.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            } else if (response.code() != 500) {
+                                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                        .setMessage("출근 완료")
+                                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                Intent startLocationService =
+                                                                        new Intent(WorkerCommute.this, LocationService.class);
+                                                                startLocationService.putExtra("companyId", companyId);
+                                                                startService(startLocationService);
+                                                            }
+                                                        })
+                                                        .show();
+                                            } else {
+                                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                        .setMessage("퇴근을 하지 않았습니다.")
+                                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                            public void onClick(DialogInterface dialog, int which){
+                                                            }
+                                                        })
+                                                        .show();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<Void> call, Throwable t) {
+                                            Toast.makeText(WorkerCommute.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                } else {
+                                    new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                            .setMessage("위치가 맞지 않습니다.")
+                                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which){
+                                                }
+                                            })
+                                            .show();
+                                }
+                            } else {
+                                new AlertDialog.Builder(WorkerCommute.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                        .setMessage("위치가 맞지 않습니다.")
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which){
+                                            }
+                                        })
+                                        .show();
+                            }
+                        }
+                    })
+                    .setPositiveButton("취소", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .show();
+        });
+    }
+
+    private void initData() throws IOException {
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+
+//        progressDialog.show();
+        Intent intent = getIntent();
+        companyId = intent.getLongExtra("companyId", 0);
+        companyName = intent.getStringExtra("companyName");
+        companyLocation = intent.getStringExtra("companyLocation");
+        TextView header = findViewById(R.id.header_name_text);
+        header.setText(companyName);
+        //지도를 띄우자
+        // java code
+        mapView = new MapView(this);
+        mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
+        mapViewContainer.addView(mapView);
+        mapView.setMapViewEventListener(this);
+        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
+
+        if (!checkLocationServicesStatus()) {
+            showDialogForLocationServiceSetting();
+        } else {
+            checkRunTimePermission();
+        }
+
+        gpsTracker = new GpsTracker(WorkerCommute.this);
+
+        latitude = gpsTracker.getLatitude();
+        longitude = gpsTracker.getLongitude();
+
+        geocoder = new Geocoder(this, Locale.getDefault());
+        fromLocationName = geocoder.getFromLocationName(companyLocation, 1);
+        companyAddress = fromLocationName.get(0);
+        companyLatitude = companyAddress.getLatitude();
+        companyLongitude = companyAddress.getLongitude();
+    }
+
+    private void mapCircle() {
+        MapPoint point = MapPoint.mapPointWithGeoCoord(companyLatitude, companyLongitude);
+
+        MapPOIItem myLocation = new MapPOIItem();
+        myLocation.setItemName(companyName);
+        myLocation.setTag(0);
+        myLocation.setMapPoint(point);
+        myLocation.setMarkerType(MapPOIItem.MarkerType.BluePin); // 기본으로 제공하는 파란색 마커 모양
+        myLocation.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin); // 마커를 클릭했을때, 빨간색 마커 모양으로 변경
+        mapView.addPOIItem(myLocation);
+
+        MapCircle circle = new MapCircle(
+                MapPoint.mapPointWithGeoCoord(companyLatitude, companyLongitude), // center
+                50, // radius
+                Color.argb(128, 255, 0, 0), // strokeColor
+                Color.argb(128, 255, 255, 0) // fillColor
+        );
+        circle.setTag(5678);
+        mapView.addCircle(circle);
+
+        MapPointBounds[] mapPointBoundsArray = { circle.getBound() };
+        MapPointBounds mapPointBounds = new MapPointBounds(mapPointBoundsArray);
+        int padding = 80; // px
+        mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds, padding));
+    }
+
 
     public String getCurrentAddress(double latitude, double longitude) {
         //지오코더... GPS를 주소로 변환

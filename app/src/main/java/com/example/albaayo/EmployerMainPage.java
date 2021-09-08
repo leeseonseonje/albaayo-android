@@ -14,7 +14,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -30,12 +29,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.albaayo.employer.WorkerInvite;
 import com.example.albaayo.mypage.UserMyPage;
 import com.example.http.Http;
 import com.example.http.dto.CompanyDto;
 import com.example.http.dto.Id;
-import com.example.http.dto.RequestCompanyDto;
 import com.example.http.dto.ResponseLoginDto;
 import com.example.list.accept_company.CompanyListAdapter;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -71,7 +68,7 @@ public class EmployerMainPage extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private TextView emptyText;
     private Button myPageButton;
-    String absolutePath;
+    private String absolutePath;
     private ResponseLoginDto data;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
@@ -82,6 +79,52 @@ public class EmployerMainPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.employer_main_page);
 
+        initData();
+
+        companiesApi(Id.getInstance().getId());
+
+        footerButton();
+
+        createGroup();
+
+        addressSearch();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
+        emptyText = findViewById(R.id.empty_list);
+        address = findViewById(R.id.input_address);
+
+        headerName = findViewById(R.id.header_name_text);
+
+        headerName.setText(Id.getInstance().getName());
+
+        companyPicture = findViewById(R.id.company_image_view);
+        employerMainLayout = findViewById(R.id.employer_main_layout);
+        companyCreateLayout = findViewById(R.id.company_create_layout);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        sharedPreferencesPut();
+        getFirebaseToken();
+    }
+
+    private void getFirebaseToken() {
+        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w("FirebaseSettingEx", "getInstanceId failed", task.getException());
+                return;
+            }
+
+            // 토큰을 읽고, 텍스트 뷰에 보여주기
+            String token = task.getResult();
+            System.out.println("token = " + token);
+        });
+    }
+
+    private void sharedPreferencesPut() {
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
 
@@ -100,42 +143,6 @@ public class EmployerMainPage extends AppCompatActivity {
         Id.getInstance().setUserId(sf.getString("userId", ""));
         Id.getInstance().setName(sf.getString("name", ""));
         Id.getInstance().setRole(sf.getString("role", ""));
-
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-
-        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) {
-                Log.w("FirebaseSettingEx", "getInstanceId failed", task.getException());
-                return;
-            }
-
-            // 토큰을 읽고, 텍스트 뷰에 보여주기
-            String token = task.getResult();
-            System.out.println("token = " + token);
-        });
-
-        emptyText = findViewById(R.id.empty_list);
-        address = findViewById(R.id.input_address);
-
-        companiesApi(Id.getInstance().getId());
-
-        headerName = findViewById(R.id.header_name_text);
-
-        headerName.setText(Id.getInstance().getName());
-
-        companyPicture = findViewById(R.id.company_image_view);
-        employerMainLayout = findViewById(R.id.employer_main_layout);
-        companyCreateLayout = findViewById(R.id.company_create_layout);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-
-
-        footerButton();
-
-        createGroup();
-
-        addressSearch();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -160,10 +167,6 @@ public class EmployerMainPage extends AppCompatActivity {
                     if (!numberText.getText().toString().replace(" ", "").equals("")) {
                         if (imageBytes != null) {
                             progressDialog.show();
-//                            String picture = Base64.encodeToString(imageBytes, 0);
-//                            RequestCompanyDto request = RequestCompanyDto.builder().name(nameText.getText().toString())
-//                                    .location(address.getText().toString() + " " + locationText.getText().toString())
-//                                    .businessRegistrationNumber(numberText.getText().toString()).picture(picture).build();
                             File file = new File(absolutePath);
 
                             ArrayList<MultipartBody.Part> list = new ArrayList<>();
@@ -239,11 +242,13 @@ public class EmployerMainPage extends AppCompatActivity {
                                 }
                             });
                         } else {
-                            RequestCompanyDto request = RequestCompanyDto.builder().name(nameText.getText().toString())
-                                    .location(address.getText().toString() + " " + locationText.getText().toString())
-                                    .businessRegistrationNumber(numberText.getText().toString()).build();
+                            ArrayList<MultipartBody.Part> list = new ArrayList<>();
+                            list.add(MultipartBody.Part.createFormData("name", nameText.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("location", address.getText().toString()
+                                    + " " + locationText.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("businessRegistrationNumber", numberText.getText().toString()));
                             Call<CompanyDto> call = Http.getInstance().getApiService()
-                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), null);
+                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
                             call.enqueue(new Callback<CompanyDto>() {
                                 @SneakyThrows
                                 @Override
@@ -254,7 +259,7 @@ public class EmployerMainPage extends AppCompatActivity {
                                         editor.commit();
 
                                         Call<CompanyDto> reCall = Http.getInstance().getApiService()
-                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), null);
+                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
 
                                         reCall.enqueue(new Callback<CompanyDto>() {
                                             @Override
@@ -278,6 +283,8 @@ public class EmployerMainPage extends AppCompatActivity {
 
                                             @Override
                                             public void onFailure(Call<CompanyDto> call, Throwable t) {
+                                                System.out.println("t.getMessage() = " + t.getMessage());
+                                                System.out.println("t.getMessage() = " + t.getStackTrace());
                                                 Toast.makeText(EmployerMainPage.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
                                             }
                                         });
@@ -300,6 +307,8 @@ public class EmployerMainPage extends AppCompatActivity {
 
                                 @Override
                                 public void onFailure(Call<CompanyDto> call, Throwable t) {
+                                    System.out.println("t.getMessage() = " + t.getMessage());
+                                    System.out.println("t.getMessage() = " + t.getStackTrace());
                                     Toast.makeText(EmployerMainPage.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
                                 }
                             });

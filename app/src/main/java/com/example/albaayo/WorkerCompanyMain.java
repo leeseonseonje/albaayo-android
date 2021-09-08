@@ -73,6 +73,20 @@ public class WorkerCompanyMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.worker_company_main);
 
+        initData();
+
+        header();
+
+        footer();
+
+        noticeRegisterActivity();
+
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
 
@@ -83,9 +97,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recycler_view);
         manager = new LinearLayoutManager(WorkerCompanyMain.this, LinearLayoutManager.VERTICAL,false);
-//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getApplicationContext(),LinearLayoutManager.VERTICAL);
-//        dividerItemDecoration.setDrawable(getApplication().getResources().getDrawable(R.drawable.c));
-//        recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(manager);
 
         calendarLayout = findViewById(R.id.calendar_layout);
@@ -99,13 +110,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
         mainList(companyId);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-
-        header();
-        footer();
-        noticeRegisterActivity();
-
     }
 
     private void noticeRegisterActivity() {

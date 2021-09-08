@@ -59,38 +59,77 @@ public class NoticeUpdate extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
+    private long noticeId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.company_notice_register);
 
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
+        initData();
+        gallery();
 
-        Intent intent = getIntent();
-        String companyName = intent.getStringExtra("companyName");
-        long noticeId = intent.getLongExtra("noticeId", 0);
-        headerName = findViewById(R.id.header_name_text);
-        headerName.setText(companyName);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        updateForm();
 
-        title = findViewById(R.id.input_notice_title);
-        content = findViewById(R.id.input_notice_content);
-        imageButton = findViewById(R.id.notice_image_button);
-        update = findViewById(R.id.notice_register_button);
+        update();
+    }
 
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
+    private void update() {
+        update.setOnClickListener(v -> {
+            progressDialog.show();
+            List<ImageDto> list = companyNoticeRegisterAdapter.getList();
+            List<NoticeImageDto> imageList = new ArrayList<>();
+            for (ImageDto imageDto : list) {
+                Bitmap bitmap = imageDto.getImage();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                byte[] imageBytes = stream.toByteArray();
+                String image = Base64.encodeToString(imageBytes, 0);
+                imageList.add(NoticeImageDto.builder().image(image).imageContent(imageDto.getText()).build());
+            }
 
-        update.setText("수정");
-        imageButton.setOnClickListener(v -> {
-            Intent i = new Intent();
-            i.setType("image/*");
-            i.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(i, 0);
+            requestNoticeUpdateDto = RequestNoticeUpdateDto.builder().noticeId(noticeId).title(title.getText().toString())
+                    .contents(content.getText().toString()).imageList(imageList).build();
+
+            Call<Void> call1 = Http.getInstance().getApiService()
+                    .noticeUpdate(Id.getInstance().getAccessToken(), requestNoticeUpdateDto);
+            call1.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.code() == 401) {
+                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                        editor.putString("accessToken", response.headers().get("Authorization"));
+                        editor.commit();
+
+                        Call<Void> reCall1 = Http.getInstance().getApiService()
+                                .noticeUpdate(Id.getInstance().getAccessToken(), requestNoticeUpdateDto);
+                        reCall1.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                finish();
+                                progressDialog.dismiss();
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Toast.makeText(NoticeUpdate.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        finish();
+                        progressDialog.dismiss();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(NoticeUpdate.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
+    }
 
+    private void updateForm() {
         progressDialog.show();
         Call<ResponseNoticeDto> call = Http.getInstance().getApiService()
                 .noticeContent(Id.getInstance().getAccessToken(), noticeId);
@@ -152,59 +191,37 @@ public class NoticeUpdate extends AppCompatActivity {
                 Toast.makeText(NoticeUpdate.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        update.setOnClickListener(v -> {
-            progressDialog.show();
-            List<ImageDto> list = companyNoticeRegisterAdapter.getList();
-            List<NoticeImageDto> imageList = new ArrayList<>();
-            for (ImageDto imageDto : list) {
-                Bitmap bitmap = imageDto.getImage();
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-                byte[] imageBytes = stream.toByteArray();
-                String image = Base64.encodeToString(imageBytes, 0);
-                imageList.add(NoticeImageDto.builder().image(image).imageContent(imageDto.getText()).build());
-            }
-
-            requestNoticeUpdateDto = RequestNoticeUpdateDto.builder().noticeId(noticeId).title(title.getText().toString())
-                    .contents(content.getText().toString()).imageList(imageList).build();
-
-            Call<Void> call1 = Http.getInstance().getApiService()
-                    .noticeUpdate(Id.getInstance().getAccessToken(), requestNoticeUpdateDto);
-            call1.enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.code() == 401) {
-                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                        editor.putString("accessToken", response.headers().get("Authorization"));
-                        editor.commit();
-
-                        Call<Void> reCall1 = Http.getInstance().getApiService()
-                                .noticeUpdate(Id.getInstance().getAccessToken(), requestNoticeUpdateDto);
-                        reCall1.enqueue(new Callback<Void>() {
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response) {
-                                finish();
-                                progressDialog.dismiss();
-                            }
-
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t) {
-                                Toast.makeText(NoticeUpdate.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    } else {
-                        finish();
-                        progressDialog.dismiss();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Toast.makeText(NoticeUpdate.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                }
-            });
+    private void gallery() {
+        imageButton.setOnClickListener(v -> {
+            Intent i = new Intent();
+            i.setType("image/*");
+            i.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(i, 0);
         });
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+
+        Intent intent = getIntent();
+        String companyName = intent.getStringExtra("companyName");
+        noticeId = intent.getLongExtra("noticeId", 0);
+        headerName = findViewById(R.id.header_name_text);
+        headerName.setText(companyName);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
+        title = findViewById(R.id.input_notice_title);
+        content = findViewById(R.id.input_notice_content);
+        imageButton = findViewById(R.id.notice_image_button);
+        update = findViewById(R.id.notice_register_button);
+
+        update.setText("수정");
     }
 
     @SneakyThrows

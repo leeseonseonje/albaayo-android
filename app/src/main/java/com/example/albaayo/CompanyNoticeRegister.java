@@ -70,6 +70,15 @@ public class CompanyNoticeRegister extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.company_notice_register);
 
+        initData();
+
+        noticeInput();
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
         Intent intent = getIntent();
         companyId = intent.getLongExtra("companyId", 0);
         companyName = intent.getStringExtra("companyName");
@@ -87,13 +96,8 @@ public class CompanyNoticeRegister extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(companyNoticeRegisterAdapter);
 
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
-
-        noticeInput();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

@@ -43,7 +43,6 @@
             android:value="9eba05b8f9e01361ac14ceed37ce7e6b" />
 
         <activity android:name=".SignUp" />
-        <activity android:name=".RoleSelect" />
         <activity android:name=".AddressSearchActivity" />
         <activity android:name=".EmployerCompanyMain" />
         <activity android:name=".employer.WorkerInvite" />

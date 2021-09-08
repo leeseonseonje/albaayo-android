@@ -28,6 +28,7 @@ import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapView;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,6 +59,10 @@ public class EmployerLocationShare extends AppCompatActivity implements MapView.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.employer_location_share);
 
+        initData();
+    }
+
+    private void initData() throws IOException {
         Intent intent = getIntent();
         companyLocation = intent.getStringExtra("companyLocation");
         workerName = intent.getStringExtra("workerName");

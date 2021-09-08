@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -55,9 +56,52 @@ public class WorkerMainPage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.worker_main_page);
 
+        initData();
+
+        acceptCompanyApi();
+
+        headerButton();
+        footerButton();
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
         Intent intent = getIntent();
         data = intent.getParcelableExtra("login");
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        sharedPreferencesPut();
+
+        getFirebaseToken();
+
+        emptyText = findViewById(R.id.empty_list);
+        headerName = findViewById(R.id.header_name_text);
+        countText = findViewById(R.id.count);
+        countImage = findViewById(R.id.count_image);
+        recyclerView = findViewById(R.id.recycler_view);
+        acceptListButton = findViewById(R.id.accept);
+        inviteListButton = findViewById(R.id.not_accept);
+
+
+        headerName.setText(Id.getInstance().getName());
+    }
+
+    private void getFirebaseToken() {
+        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w("FirebaseSettingEx", "getInstanceId failed", task.getException());
+                return;
+            }
+
+            // 토큰을 읽고, 텍스트 뷰에 보여주기
+            String token = task.getResult();
+            System.out.println("token = " + token);
+        });
+    }
+
+    private void sharedPreferencesPut() {
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
 
@@ -74,19 +118,6 @@ public class WorkerMainPage extends AppCompatActivity {
         Id.getInstance().setUserId(sf.getString("userId", ""));
         Id.getInstance().setName(sf.getString("name", ""));
         Id.getInstance().setRole(sf.getString("role", ""));
-
-        System.out.println("파이어베이스 토큰: " + FirebaseMessaging.getInstance().getToken());
-
-        initData();
-
-        headerName.setText(Id.getInstance().getName());
-
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-        acceptCompanyApi();
-
-        headerButton();
-        footerButton();
     }
 
     private void footerButton() {
@@ -118,15 +149,6 @@ public class WorkerMainPage extends AppCompatActivity {
         });
     }
 
-    private void initData() {
-        emptyText = findViewById(R.id.empty_list);
-        headerName = findViewById(R.id.header_name_text);
-        countText = findViewById(R.id.count);
-        countImage = findViewById(R.id.count_image);
-        recyclerView = findViewById(R.id.recycler_view);
-        acceptListButton = findViewById(R.id.accept);
-        inviteListButton = findViewById(R.id.not_accept);
-    }
 
     private void recyclerViewSetting(List<CompanyDto> result) {
 

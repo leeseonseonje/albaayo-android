@@ -37,23 +37,13 @@ public class EmployerGroupOption extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.employer_group_page);
 
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
+        initData();
 
-        Intent intent = getIntent();
-        companyId = intent.getLongExtra("companyId", 0);
-        companyName = intent.getStringExtra("companyName");
+        groupDelete();
+    }
 
-        headerText = findViewById(R.id.header_name_text);
-        headerText.setText(companyName);
-
-        salaryInfoButton = findViewById(R.id.salary_info);
-        workContractButton = findViewById(R.id.work_contract);
-        groupDeleteButton = findViewById(R.id.group_delete);
-
+    private void groupDelete() {
         groupDeleteButton.setOnClickListener(v -> {
-
-
             new AlertDialog.Builder(EmployerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
                     .setMessage("그룹을 삭제하시겠습니까?")
                     .setNegativeButton("확인", new DialogInterface.OnClickListener() {
@@ -105,5 +95,21 @@ public class EmployerGroupOption extends AppCompatActivity {
                 }
             }).show();
         });
+    }
+
+    private void initData() {
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+
+        Intent intent = getIntent();
+        companyId = intent.getLongExtra("companyId", 0);
+        companyName = intent.getStringExtra("companyName");
+
+        headerText = findViewById(R.id.header_name_text);
+        headerText.setText(companyName);
+
+        salaryInfoButton = findViewById(R.id.salary_info);
+        workContractButton = findViewById(R.id.work_contract);
+        groupDeleteButton = findViewById(R.id.group_delete);
     }
 }

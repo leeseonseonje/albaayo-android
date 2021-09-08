@@ -48,6 +48,16 @@ public class WorkerInvite extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.worker_invite);
 
+        initData();
+
+        workerFind();
+        workerInvite();
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
 
@@ -60,13 +70,6 @@ public class WorkerInvite extends AppCompatActivity {
 
         searchButton = findViewById(R.id.id_search);
         invite = findViewById(R.id.invite_button);
-
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-
-
-        workerFind();
-        workerInvite();
     }
 
     private void workerFind() {

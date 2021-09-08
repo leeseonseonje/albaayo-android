@@ -37,20 +37,12 @@ public class WorkerGroupOption extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.worker_group_page);
 
-        sf = getSharedPreferences("sFile", MODE_PRIVATE);
-        editor = sf.edit();
+        initData();
 
-        Intent intent = getIntent();
-        companyId = intent.getLongExtra("companyId", 0);
-        companyName = intent.getStringExtra("companyName");
+        groupOut();
+    }
 
-        headerText = findViewById(R.id.header_name_text);
-        headerText.setText(companyName);
-
-        salaryInfoButton = findViewById(R.id.salary_info);
-        workContractButton = findViewById(R.id.work_contract);
-        groupOutButton = findViewById(R.id.group_out);
-
+    private void groupOut() {
         groupOutButton.setOnClickListener(v -> {
 
             new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
@@ -104,6 +96,22 @@ public class WorkerGroupOption extends AppCompatActivity {
                 }
             }).show();
         });
+    }
+
+    private void initData() {
+        sf = getSharedPreferences("sFile", MODE_PRIVATE);
+        editor = sf.edit();
+
+        Intent intent = getIntent();
+        companyId = intent.getLongExtra("companyId", 0);
+        companyName = intent.getStringExtra("companyName");
+
+        headerText = findViewById(R.id.header_name_text);
+        headerText.setText(companyName);
+
+        salaryInfoButton = findViewById(R.id.salary_info);
+        workContractButton = findViewById(R.id.work_contract);
+        groupOutButton = findViewById(R.id.group_out);
     }
 
     public void payInformation() {

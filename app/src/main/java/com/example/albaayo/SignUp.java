@@ -2,7 +2,6 @@ package com.example.albaayo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,12 +13,10 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.http.Http;
-import com.example.http.dto.Id;
 import com.example.http.dto.RequestSignupDto;
 import com.example.http.dto.ResponseSignupDto;
 import com.example.http.dto.ValidateDuplicateCheckMessage;
@@ -55,47 +52,18 @@ public class SignUp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup);
 
-        idText = (EditText) findViewById(R.id.input_id); // ID
-        password = (EditText) findViewById(R.id.input_password); // PW
-        passwordCheck = (EditText) findViewById(R.id.input_password_check); // PW 체크
-        name = (EditText) findViewById(R.id.input_name); // 이름
-        //final EditText birth = (EditText) findViewById(R.id.input_birth); // 생년월일
-        email = (EditText) findViewById(R.id.input_email); // 이메일
-        idCheck = (Button) findViewById(R.id.id_ok); // ID 중복-체크 버튼
-        signUp = (Button) findViewById(R.id.sign_up); // 회원가입 확인하는 버튼
-        duplicateCheck = (TextView) findViewById(R.id.duplicate_check);
-        displayDate = (TextView) findViewById(R.id.input_birth);
-        worker = (RadioButton) findViewById(R.id.workerRB);
-        employer = (RadioButton) findViewById(R.id.employerRB);
+        initData();
 
         idCheck.setOnClickListener(v -> {
             duplicateCheck(idText.getText().toString());
         });
 
-        displayDate.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                Calendar cal = Calendar.getInstance();
-                year = cal.get(Calendar.YEAR);
-                month = cal.get(Calendar.MONTH);
-                day = cal.get(Calendar.DAY_OF_MONTH);
-                DatePickerDialog dialog = new DatePickerDialog(SignUp.this, android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                        DateSetListener,
-                        year,month,day);
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                dialog.show();
-            }
-        });
-        DateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int day) {
-                month = month + 1;
-                Log.d(TAG, "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year );
-                String date = year + "년 " + month + "월 " + day + "일";
-                displayDate.setText(date);
-            }
-        };
+        birthSelect();
 
+        signUp();
+    }
+
+    private void signUp() {
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -150,6 +118,47 @@ public class SignUp extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void birthSelect() {
+        displayDate.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Calendar cal = Calendar.getInstance();
+                year = cal.get(Calendar.YEAR);
+                month = cal.get(Calendar.MONTH);
+                day = cal.get(Calendar.DAY_OF_MONTH);
+                DatePickerDialog dialog = new DatePickerDialog(SignUp.this, android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                        DateSetListener,
+                        year,month,day);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+            }
+        });
+        DateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int day) {
+                month = month + 1;
+                Log.d(TAG, "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year );
+                String date = year + "년 " + month + "월 " + day + "일";
+                displayDate.setText(date);
+            }
+        };
+    }
+
+    private void initData() {
+        idText = (EditText) findViewById(R.id.input_id); // ID
+        password = (EditText) findViewById(R.id.input_password); // PW
+        passwordCheck = (EditText) findViewById(R.id.input_password_check); // PW 체크
+        name = (EditText) findViewById(R.id.input_name); // 이름
+        //final EditText birth = (EditText) findViewById(R.id.input_birth); // 생년월일
+        email = (EditText) findViewById(R.id.input_email); // 이메일
+        idCheck = (Button) findViewById(R.id.id_ok); // ID 중복-체크 버튼
+        signUp = (Button) findViewById(R.id.sign_up); // 회원가입 확인하는 버튼
+        duplicateCheck = (TextView) findViewById(R.id.duplicate_check);
+        displayDate = (TextView) findViewById(R.id.input_birth);
+        worker = (RadioButton) findViewById(R.id.workerRB);
+        employer = (RadioButton) findViewById(R.id.employerRB);
     }
 
     private void duplicateCheck(String text) {

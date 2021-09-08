@@ -72,6 +72,19 @@ public class EmployerCompanyMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.employer_company_main);
 
+        initData();
+
+        mainList(companyId);
+
+        header();
+        footer();
+    }
+
+    private void initData() {
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
+        progressDialog.setProgressStyle(R.style.Widget_AppCompat_ProgressBar_Horizontal);
+
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
 
@@ -82,7 +95,6 @@ public class EmployerCompanyMain extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
 
-
         headerName = findViewById(R.id.header_name_text);
         headerName.setText(companyName);
         main = findViewById(R.id.company_main);
@@ -91,19 +103,12 @@ public class EmployerCompanyMain extends AppCompatActivity {
         manager = new LinearLayoutManager(EmployerCompanyMain.this, LinearLayoutManager.VERTICAL,false);
         recyclerView.setLayoutManager(manager);
 
-        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-        progressDialog.setMessage("로딩중!");
-        progressDialog.setProgressStyle(R.style.Widget_AppCompat_ProgressBar_Horizontal);
 
         calendarLayout = findViewById(R.id.calendar_layout);
         calendarView = findViewById(R.id.calendar);
         dateText = findViewById(R.id.date);
         inputSchedule = findViewById(R.id.input_schedule);
 
-        mainList(companyId);
-
-        header();
-        footer();
         noticeRegisterActivity();
     }
 
@@ -192,59 +197,30 @@ public class EmployerCompanyMain extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void header() {
-        notice = findViewById(R.id.notice);
-        noticeRegister = findViewById(R.id.notice_register);
-        notice.setOnClickListener(v -> {
+        notice();
+
+        schedule();
+
+        mainLayout();
+    }
+
+    private void mainLayout() {
+        main.setOnClickListener(v -> {
             progressDialog.show();
             recyclerView.setVisibility(View.VISIBLE);
             calendarLayout.setVisibility(View.GONE);
-            noticeRegister.setVisibility(View.VISIBLE);
-            main.setTextColor(Color.BLACK);
+            notice.setTextColor(Color.BLACK);
             schedule.setTextColor(Color.BLACK);
-            notice.setTextColor(Color.parseColor("#8ABFE8"));
-            System.out.println("main.getCurrentTextColor() = " + main.getCurrentTextColor());
-            System.out.println("main.getCurrentTextColor() = " + schedule.getCurrentTextColor());
-            System.out.println("main.getCurrentTextColor() = " + notice.getCurrentTextColor());
-            int page = 0;
-            Call<List<ResponseNoticeListDto>> call = Http.getInstance().getApiService()
-                    .noticeList(Id.getInstance().getAccessToken(), companyId, page);
-            call.enqueue(new Callback<List<ResponseNoticeListDto>>() {
-                @Override
-                public void onResponse(Call<List<ResponseNoticeListDto>> call, Response<List<ResponseNoticeListDto>> response) {
-                    if (response.code() == 401) {
-                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
-                        editor.putString("accessToken", response.headers().get("Authorization"));
-                        editor.commit();
-
-                        Call<List<ResponseNoticeListDto>> reCall = Http.getInstance().getApiService()
-                                .noticeList(Id.getInstance().getAccessToken(), companyId, page);
-                        reCall.enqueue(new Callback<List<ResponseNoticeListDto>>() {
-                            @Override
-                            public void onResponse(Call<List<ResponseNoticeListDto>> call, Response<List<ResponseNoticeListDto>> response) {
-                                list = response.body();
-                                recyclerView.setAdapter(new CompanyNoticeAdapter(list, companyName));
-                                progressDialog.dismiss();
-                            }
-
-                            @Override
-                            public void onFailure(Call<List<ResponseNoticeListDto>> call, Throwable t) {
-                                Toast.makeText(EmployerCompanyMain.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    } else {
-                        list = response.body();
-                        recyclerView.setAdapter(new CompanyNoticeAdapter(list, companyName));
-                        progressDialog.dismiss();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<List<ResponseNoticeListDto>> call, Throwable t) {
-                    Toast.makeText(EmployerCompanyMain.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
-                }
-            });
+            main.setTextColor(Color.parseColor("#8ABFE8"));
+            if (noticeRegister.getVisibility() == View.VISIBLE) {
+                noticeRegister.setVisibility(View.GONE);
+            }
+            mainList(companyId);
+            progressDialog.dismiss();
         });
+    }
 
+    private void schedule() {
         schedule = findViewById(R.id.schedule);
         schedule.setOnClickListener(v -> {
             progressDialog.show();
@@ -328,19 +304,57 @@ public class EmployerCompanyMain extends AppCompatActivity {
             progressDialog.dismiss();
 
         });
+    }
 
-        main.setOnClickListener(v -> {
+    private void notice() {
+        notice = findViewById(R.id.notice);
+        noticeRegister = findViewById(R.id.notice_register);
+        notice.setOnClickListener(v -> {
             progressDialog.show();
             recyclerView.setVisibility(View.VISIBLE);
             calendarLayout.setVisibility(View.GONE);
-            notice.setTextColor(Color.BLACK);
+            noticeRegister.setVisibility(View.VISIBLE);
+            main.setTextColor(Color.BLACK);
             schedule.setTextColor(Color.BLACK);
-            main.setTextColor(Color.parseColor("#8ABFE8"));
-            if (noticeRegister.getVisibility() == View.VISIBLE) {
-                noticeRegister.setVisibility(View.GONE);
-            }
-            mainList(companyId);
-            progressDialog.dismiss();
+            notice.setTextColor(Color.parseColor("#8ABFE8"));
+            int page = 0;
+            Call<List<ResponseNoticeListDto>> call = Http.getInstance().getApiService()
+                    .noticeList(Id.getInstance().getAccessToken(), companyId, page);
+            call.enqueue(new Callback<List<ResponseNoticeListDto>>() {
+                @Override
+                public void onResponse(Call<List<ResponseNoticeListDto>> call, Response<List<ResponseNoticeListDto>> response) {
+                    if (response.code() == 401) {
+                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                        editor.putString("accessToken", response.headers().get("Authorization"));
+                        editor.commit();
+
+                        Call<List<ResponseNoticeListDto>> reCall = Http.getInstance().getApiService()
+                                .noticeList(Id.getInstance().getAccessToken(), companyId, page);
+                        reCall.enqueue(new Callback<List<ResponseNoticeListDto>>() {
+                            @Override
+                            public void onResponse(Call<List<ResponseNoticeListDto>> call, Response<List<ResponseNoticeListDto>> response) {
+                                list = response.body();
+                                recyclerView.setAdapter(new CompanyNoticeAdapter(list, companyName));
+                                progressDialog.dismiss();
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<ResponseNoticeListDto>> call, Throwable t) {
+                                Toast.makeText(EmployerCompanyMain.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        list = response.body();
+                        recyclerView.setAdapter(new CompanyNoticeAdapter(list, companyName));
+                        progressDialog.dismiss();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<ResponseNoticeListDto>> call, Throwable t) {
+                    Toast.makeText(EmployerCompanyMain.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
