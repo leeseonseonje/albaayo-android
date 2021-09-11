@@ -1,11 +1,13 @@
 package com.example.albaayo;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -14,17 +16,22 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.http.Http;
 import com.example.http.dto.RequestLoginDto;
 import com.example.http.dto.ResponseLoginDto;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginPage extends AppCompatActivity {
-    EditText password_hide; //비밀번호 하이드 변수 생성
-    CheckBox showPassword; //비밀번호 하이드 변수 생성
+    private EditText password_hide; //비밀번호 하이드 변수 생성
+    private CheckBox showPassword; //비밀번호 하이드 변수 생성
     private Intent intent;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +44,17 @@ public class LoginPage extends AppCompatActivity {
         Button login = (Button) findViewById(R.id.login);
         Button sign_up = (Button) findViewById(R.id.sign_up);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        getFirebaseToken();
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RequestLoginDto request = RequestLoginDto.builder()
+                RequestLoginDto request = RequestLoginDto
+                        .builder()
                         .userId(id_input.getText().toString())
                         .password(password_input.getText().toString())
+                        .fcmToken(token)
                         .build();
-
                 loginApi(request);
             }
         });
@@ -100,6 +109,23 @@ public class LoginPage extends AppCompatActivity {
             }
         });
     }
+
+    private void getFirebaseToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.d("", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        token = task.getResult();
+
+                    }
+                });
+    }
+
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(Intent.ACTION_MAIN);

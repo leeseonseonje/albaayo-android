@@ -144,4 +144,6 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio
-Http.java
+/src/main/java/com/example/http/Http.java
+/src/main/java/com/example/albaayo/AddressSearchActivity.java
+google-services.json

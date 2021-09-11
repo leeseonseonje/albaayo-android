@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/java/com/example/http/Http.java
+/app/src/main/java/com/example/albaayo/AddressSearchActivity.java
+/app/google-services.json

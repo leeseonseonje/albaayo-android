@@ -10,15 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albaayo.R;
-import com.example.albaayo.WorkerCompanyMain;
 import com.example.albaayo.employer.NoticeContent;
-import com.example.company_main.CompanyMainViewHolder;
-import com.example.http.dto.IdAndName;
+import com.example.http.dto.RequestNoticeDto;
 import com.example.http.dto.ResponseNoticeListDto;
 
 import java.util.List;
 
-public class CompanyNoticeAdapter extends RecyclerView.Adapter<CompanyNoticeViewHolder> {
+public class CompanyNoticeAdapter extends RecyclerView.Adapter<RequestNoticeDto.CompanyNoticeViewHolder> {
 
     private List<ResponseNoticeListDto> list;
     private String companyName;
@@ -30,16 +28,16 @@ public class CompanyNoticeAdapter extends RecyclerView.Adapter<CompanyNoticeView
 
     @NonNull
     @Override
-    public CompanyNoticeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RequestNoticeDto.CompanyNoticeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.company_notice, parent, false);
 
-        return new CompanyNoticeViewHolder(view);
+        return new RequestNoticeDto.CompanyNoticeViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CompanyNoticeViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RequestNoticeDto.CompanyNoticeViewHolder holder, int position) {
         holder.getNoticeTitle().setText("   " + list.get(position).getTitle());
         holder.getNoticeName().setText(list.get(position).getName());
         holder.getNoticeDate().setText(list.get(position).getDate());

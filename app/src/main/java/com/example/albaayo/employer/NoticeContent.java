@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albaayo.NoticeUpdate;
 import com.example.albaayo.R;
 import com.example.company_notice.CompanyNoticeContentAdapter;
+import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.ImageDto;
 import com.example.http.dto.ResponseNoticeDto;

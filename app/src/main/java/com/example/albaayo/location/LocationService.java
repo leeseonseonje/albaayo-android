@@ -12,6 +12,7 @@ import android.os.IBinder;
 import androidx.annotation.RequiresApi;
 
 import com.example.albaayo.GpsTracker;
+import com.example.http.Http;
 import com.example.http.dto.Id;
 
 import java.io.IOException;

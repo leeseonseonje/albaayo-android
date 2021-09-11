@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albaayo.R;
 import com.example.albaayo.location.EmployerLocationShare;
 import com.example.albaayo.location.LocationDto;
+import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.ResponseCompanyWorkerListDto;
 
