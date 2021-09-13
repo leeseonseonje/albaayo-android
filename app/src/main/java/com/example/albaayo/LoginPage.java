@@ -31,7 +31,7 @@ public class LoginPage extends AppCompatActivity {
     private EditText password_hide; //비밀번호 하이드 변수 생성
     private CheckBox showPassword; //비밀번호 하이드 변수 생성
     private Intent intent;
-    private String token;
+//    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,20 +44,31 @@ public class LoginPage extends AppCompatActivity {
         Button login = (Button) findViewById(R.id.login);
         Button sign_up = (Button) findViewById(R.id.sign_up);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        getFirebaseToken();
+//        getFirebaseToken();
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RequestLoginDto request = RequestLoginDto
-                        .builder()
-                        .userId(id_input.getText().toString())
-                        .password(password_input.getText().toString())
-                        .fcmToken(token)
-                        .build();
-                loginApi(request);
+                FirebaseMessaging.getInstance().getToken()
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (!task.isSuccessful()) {
+                                    Log.d("", "Fetching FCM registration token failed", task.getException());
+                                    return;
+                                }
+                                RequestLoginDto request = RequestLoginDto
+                                        .builder()
+                                        .userId(id_input.getText().toString())
+                                        .password(password_input.getText().toString())
+                                        .fcmToken(task.getResult())
+                                        .build();
+                                loginApi(request);
+                            }
+                        });
             }
         });
+
         sign_up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -110,21 +121,21 @@ public class LoginPage extends AppCompatActivity {
         });
     }
 
-    private void getFirebaseToken() {
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.d("", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        token = task.getResult();
-
-                    }
-                });
-    }
+//    private void getFirebaseToken() {
+//        FirebaseMessaging.getInstance().getToken()
+//                .addOnCompleteListener(new OnCompleteListener<String>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<String> task) {
+//                        if (!task.isSuccessful()) {
+//                            Log.d("", "Fetching FCM registration token failed", task.getException());
+//                            return;
+//                        }
+//
+//                        token = task.getResult();
+//
+//                    }
+//                });
+//    }
 
     @Override
     public void onBackPressed() {

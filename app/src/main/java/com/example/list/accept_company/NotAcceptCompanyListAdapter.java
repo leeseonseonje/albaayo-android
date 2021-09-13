@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albaayo.R;
+import com.example.http.Http;
 import com.example.http.dto.CompanyDto;
 import com.example.http.dto.Id;
 

@@ -1,12 +1,17 @@
 package com.example.albaayo.option;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -14,9 +19,12 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.albaayo.R;
+import com.example.albaayo.SignUp;
 import com.example.albaayo.WorkerMainPage;
 import com.example.http.Http;
 import com.example.http.dto.Id;
+
+import java.util.Calendar;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,6 +32,8 @@ import retrofit2.Response;
 
 public class WorkerGroupOption extends AppCompatActivity {
 
+    private int year, month, day;
+    private DatePickerDialog.OnDateSetListener DateSetListener;
     private Long companyId;
     private String companyName;
     private Button salaryInfoButton, workContractButton, groupOutButton;
@@ -39,6 +49,26 @@ public class WorkerGroupOption extends AppCompatActivity {
         initData();
 
         groupOut();
+
+        DateSetListener = (view, year, month, day) -> {
+            month = month + 1;
+            Log.d("", "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year );
+            String date = year + "년 " + month + "월 " + day + "일";
+        };
+
+        salaryInfoButton = findViewById(R.id.salary_info);
+        salaryInfoButton.setOnClickListener(v -> {
+
+            Calendar cal = Calendar.getInstance();
+            year = cal.get(Calendar.YEAR);
+            month = cal.get(Calendar.MONTH);
+            day = cal.get(Calendar.DAY_OF_MONTH);
+            DatePickerDialog dialog = new DatePickerDialog(WorkerGroupOption.this, android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                    DateSetListener,
+                    year,month,day);
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.show();
+        });
     }
 
     private void groupOut() {

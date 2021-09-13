@@ -20,6 +20,7 @@ import com.example.http.dto.ResponseFindWorkerDto;
 import com.example.http.dto.ResponseLoginDto;
 import com.example.http.dto.ResponseNoticeDto;
 import com.example.http.dto.ResponseNoticeListDto;
+import com.example.http.dto.ResponsePayInformationDto;
 import com.example.http.dto.ResponseScheduleDto;
 import com.example.http.dto.ResponseSignupDto;
 import com.example.http.dto.Result;
@@ -41,6 +42,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -143,4 +145,8 @@ public interface ApiService {
     @DELETE("/location/{workerId}")
     Call<Void> deleteLocation(@Header("Authorization") String accessToken, @Path("workerId") Long workerId);
 
+    @GET("/pay/{workerId}/{companyId}")
+    Call<ResponsePayInformationDto> monthPayInfo(@Header("Authorization") String accessToken,
+                                                 @Path("workerId") Long workerId, @Path("companyId") Long companyId,
+                                                 @Query("data") String date);
 }
