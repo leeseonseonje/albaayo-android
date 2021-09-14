@@ -101,18 +101,22 @@ public class EmployerCompanyMain extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view);
         manager = new LinearLayoutManager(EmployerCompanyMain.this, LinearLayoutManager.VERTICAL,false);
         recyclerView.setLayoutManager(manager);
-
-
+        optionButton = findViewById(R.id.my_page);
+        home = findViewById(R.id.home);
+        chatting = findViewById(R.id.chatting);
+        inviteButton = findViewById(R.id.invite);
+        noticeRegister = findViewById(R.id.notice_register);
         calendarLayout = findViewById(R.id.calendar_layout);
         calendarView = findViewById(R.id.calendar);
         dateText = findViewById(R.id.date);
         inputSchedule = findViewById(R.id.input_schedule);
+        schedule = findViewById(R.id.schedule);
+        notice = findViewById(R.id.notice);
 
         noticeRegisterActivity();
     }
 
     private void footer() {
-        inviteButton = findViewById(R.id.invite);
         inviteButton.setOnClickListener(v -> {
             Intent intent = new Intent(EmployerCompanyMain.this, WorkerInvite.class);
             intent.putExtra("companyId", companyId);
@@ -120,7 +124,6 @@ public class EmployerCompanyMain extends AppCompatActivity {
             startActivity(intent);
         });
 
-        chatting = findViewById(R.id.chatting);
         chatting.setOnClickListener(v -> {
             Intent intent = new Intent(EmployerCompanyMain.this, CompanyChat.class);
             intent.putExtra("companyId", companyId);
@@ -128,13 +131,10 @@ public class EmployerCompanyMain extends AppCompatActivity {
             startActivity(intent);
         });
 
-
-        home = findViewById(R.id.home);
         home.setOnClickListener(v -> {
             finish();
         });
 
-        optionButton = findViewById(R.id.my_page);
         optionButton.setOnClickListener(v -> {
             Intent intent = new Intent(EmployerCompanyMain.this, EmployerGroupOption.class);
             intent.putExtra("companyId", companyId);
@@ -307,7 +307,6 @@ public class EmployerCompanyMain extends AppCompatActivity {
 
     private void notice() {
         notice = findViewById(R.id.notice);
-        noticeRegister = findViewById(R.id.notice_register);
         notice.setOnClickListener(v -> {
             progressDialog.show();
             recyclerView.setVisibility(View.VISIBLE);

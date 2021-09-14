@@ -129,7 +129,7 @@ public class CompanyChat  extends AppCompatActivity {
 
     private void webSocketConnection() {
         mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "ws://" + Http.URL
-                + ":" + SERVER_PORT + "/example-endpoint/websocket");
+                + ":" + SERVER_PORT + "/chat-socket/websocket");
 
         resetSubscriptions();
 

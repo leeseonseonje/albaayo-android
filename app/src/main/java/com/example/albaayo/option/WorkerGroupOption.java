@@ -23,6 +23,7 @@ import com.example.albaayo.SignUp;
 import com.example.albaayo.WorkerMainPage;
 import com.example.http.Http;
 import com.example.http.dto.Id;
+import com.example.http.dto.ResponsePayInformationDto;
 
 import java.util.Calendar;
 
@@ -40,6 +41,7 @@ public class WorkerGroupOption extends AppCompatActivity {
     private TextView headerText;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
+    private String date;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,12 +55,61 @@ public class WorkerGroupOption extends AppCompatActivity {
         DateSetListener = (view, year, month, day) -> {
             month = month + 1;
             Log.d("", "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year );
-            String date = year + "년 " + month + "월 " + day + "일";
+            date = year + "-" + String.format("%02d", month) + "-" + day;
+
+            System.out.println(date);
+            Call<ResponsePayInformationDto> call = Http.getInstance().getApiService().monthPayInfo(Id.getInstance().getAccessToken(),
+                    Id.getInstance().getId(), companyId, date);
+            int finalMonth = month;
+            call.enqueue(new Callback<ResponsePayInformationDto>() {
+                @Override
+                public void onResponse(Call<ResponsePayInformationDto> call, Response<ResponsePayInformationDto> response) {
+                    if (response.code() == 401) {
+                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                        editor.putString("accessToken", response.headers().get("Authorization"));
+                        editor.commit();
+
+                        Call<ResponsePayInformationDto> reCall = Http.getInstance().getApiService().monthPayInfo(Id.getInstance().getAccessToken(),
+                                Id.getInstance().getId(), companyId, date);
+                        reCall.enqueue(new Callback<ResponsePayInformationDto>() {
+                            @Override
+                            public void onResponse(Call<ResponsePayInformationDto> call, Response<ResponsePayInformationDto> response) {
+                                new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                        .setMessage(year + "년" + finalMonth + "월" + "\n" + response.body().getPay())
+                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponsePayInformationDto> call, Throwable t) {
+
+                            }
+                        });
+                    } else {
+                        new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                .setMessage(year + "년" + finalMonth + "월" + "\n" + response.body().getPay())
+                                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                    }
+                                });
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponsePayInformationDto> call, Throwable t) {
+
+                }
+            });
         };
 
         salaryInfoButton = findViewById(R.id.salary_info);
         salaryInfoButton.setOnClickListener(v -> {
-
             Calendar cal = Calendar.getInstance();
             year = cal.get(Calendar.YEAR);
             month = cal.get(Calendar.MONTH);

@@ -105,6 +105,13 @@ public class WorkerCompanyMain extends AppCompatActivity {
         headerName = findViewById(R.id.header_name_text);
         headerName.setText(companyName);
         main = findViewById(R.id.company_main);
+        notice = findViewById(R.id.notice);
+        commuteList = findViewById(R.id.commute_List);
+        schedule = findViewById(R.id.schedule);
+        commute = findViewById(R.id.commute);
+        chatting = findViewById(R.id.chatting);
+        home = findViewById(R.id.home);
+        optionButton = findViewById(R.id.my_page);
         mainList(companyId);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -121,7 +128,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void header() {
-        notice = findViewById(R.id.notice);
         noticeRegister = findViewById(R.id.notice_register);
         notice.setOnClickListener(v -> {
             progressDialog.show();
@@ -172,7 +178,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
             });
         });
 
-        commuteList = findViewById(R.id.commute_List);
         commuteList.setOnClickListener(v -> {
             progressDialog.show();
             recyclerView.setVisibility(View.VISIBLE);
@@ -219,7 +224,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
             });
         });
 
-        schedule = findViewById(R.id.schedule);
         schedule.setOnClickListener(v -> {
             progressDialog.show();
             main.setTextColor(Color.BLACK);
@@ -361,7 +365,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
     }
 
     private void footer() {
-        commute = findViewById(R.id.commute);
         commute.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerCompanyMain.this, WorkerCommute.class);
             intent.putExtra("companyId", companyId);
@@ -370,7 +373,6 @@ public class WorkerCompanyMain extends AppCompatActivity {
             startActivity(intent);
         });
 
-        chatting = findViewById(R.id.chatting);
         chatting.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerCompanyMain.this, CompanyChat.class);
             intent.putExtra("companyId", companyId);
@@ -378,12 +380,10 @@ public class WorkerCompanyMain extends AppCompatActivity {
             startActivity(intent);
         });
 
-        home = findViewById(R.id.home);
         home.setOnClickListener(v -> {
             finish();
         });
 
-        optionButton = findViewById(R.id.my_page);
         optionButton.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerCompanyMain.this, WorkerGroupOption.class);
             intent.putExtra("companyId", companyId);
