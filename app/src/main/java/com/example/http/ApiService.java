@@ -148,5 +148,5 @@ public interface ApiService {
     @GET("/pay/{workerId}/{companyId}")
     Call<ResponsePayInformationDto> monthPayInfo(@Header("Authorization") String accessToken,
                                                  @Path("workerId") Long workerId, @Path("companyId") Long companyId,
-                                                 @Query("data") String date);
+                                                 @Query("date") String date);
 }

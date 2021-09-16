@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
@@ -25,6 +26,7 @@ import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.ResponsePayInformationDto;
 
+import java.text.DecimalFormat;
 import java.util.Calendar;
 
 import retrofit2.Call;
@@ -74,14 +76,12 @@ public class WorkerGroupOption extends AppCompatActivity {
                         reCall.enqueue(new Callback<ResponsePayInformationDto>() {
                             @Override
                             public void onResponse(Call<ResponsePayInformationDto> call, Response<ResponsePayInformationDto> response) {
-                                new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                        .setMessage(year + "년" + finalMonth + "월" + "\n" + response.body().getPay())
-                                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-
-                                            }
-                                        });
+                                AlertDialog.Builder builder = new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+                                builder.setTitle(year + "년" + finalMonth + "월 급여정보");
+                                builder.setMessage(response.body().getPay());
+                                AlertDialog alertDialog = builder.create();
+                                alertDialog.getWindow().setGravity(Gravity.CENTER);
+                                alertDialog.show();
                             }
 
                             @Override
@@ -90,14 +90,13 @@ public class WorkerGroupOption extends AppCompatActivity {
                             }
                         });
                     } else {
-                        new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                                .setMessage(year + "년" + finalMonth + "월" + "\n" + response.body().getPay())
-                                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                    }
-                                });
+                        AlertDialog.Builder builder = new AlertDialog.Builder(WorkerGroupOption.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+                        builder.setTitle(year + "년 " + finalMonth + "월 급여정보");
+                        DecimalFormat df = new DecimalFormat("###,###");
+                        builder.setMessage(df.format(response.body().getPay()) + "원");
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.getWindow().setGravity(Gravity.CENTER);
+                        alertDialog.show();
                     }
                 }
 
