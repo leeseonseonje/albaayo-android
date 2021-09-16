@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
 import com.example.http.dto.CompanyDto;
 
@@ -44,7 +42,7 @@ public class CompanyListAdapter extends RecyclerView.Adapter<CompanyListViewHold
 
         viewHolder.getName().setText(list.get(position).getName());
         viewHolder.getLocation().setText(list.get(position).getLocation());
-        viewHolder.setId(list.get(position).getId());
+        viewHolder.setId(list.get(position).getCompanyId());
         String base = list.get(position).getPicture();
         if (base != null) {
             byte[] b = Base64.decode(base, 0);

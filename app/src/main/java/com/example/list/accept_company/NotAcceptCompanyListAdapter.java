@@ -51,11 +51,11 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
 
         viewHolder.getName().setText(list.get(position).getName());
         viewHolder.getLocation().setText(list.get(position).getLocation());
-        viewHolder.setId(list.get(position).getId());
+        viewHolder.setId(list.get(position).getCompanyId());
         
         viewHolder.getAcceptButton().setOnClickListener(v -> {
             Call<Void> call = Http.getInstance().getApiService()
-                    .acceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getId());
+                    .acceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getCompanyId());
 
             call.enqueue(new Callback<Void>() {
                 @Override
@@ -66,7 +66,7 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                         editor.commit();
 
                         Call<Void> reCall = Http.getInstance().getApiService()
-                                .acceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getId());
+                                .acceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getCompanyId());
                         reCall.enqueue(new Callback<Void>() {
                             @Override
                             public void onResponse(Call<Void> call, Response<Void> response) {
@@ -99,7 +99,7 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
 
         viewHolder.getRefusalButton().setOnClickListener(v -> {
             Call<Void> call = Http.getInstance().getApiService()
-                    .notAcceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getId());
+                    .notAcceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getCompanyId());
 
             call.enqueue(new Callback<Void>() {
                 @Override
@@ -110,7 +110,7 @@ public class NotAcceptCompanyListAdapter extends RecyclerView.Adapter<NotAcceptC
                         editor.commit();
 
                         Call<Void> reCall = Http.getInstance().getApiService()
-                                .notAcceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getId());
+                                .notAcceptCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list.get(position).getCompanyId());
 
                         reCall.enqueue(new Callback<Void>() {
                             @Override

@@ -15,7 +15,7 @@ import okhttp3.ResponseBody;
 @AllArgsConstructor
 public class CompanyDto {
 
-    private Long id;
+    private Long companyId;
     private String name;
     private String location;
     private String picture;
