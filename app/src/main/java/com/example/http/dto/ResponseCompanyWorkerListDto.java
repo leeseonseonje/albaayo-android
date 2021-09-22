@@ -19,4 +19,5 @@ public class ResponseCompanyWorkerListDto {
     private String memberName;
     private String memberBirth;
     private String memberRole;
+    private Long chatCount;
 }

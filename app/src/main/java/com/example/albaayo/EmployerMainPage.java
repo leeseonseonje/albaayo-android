@@ -95,6 +95,8 @@ public class EmployerMainPage extends AppCompatActivity {
         progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
         progressDialog.setMessage("로딩중!");
 
+        sharedPreferencesPut();
+
         emptyText = findViewById(R.id.empty_list);
         address = findViewById(R.id.input_address);
 
@@ -106,7 +108,6 @@ public class EmployerMainPage extends AppCompatActivity {
         employerMainLayout = findViewById(R.id.employer_main_layout);
         companyCreateLayout = findViewById(R.id.company_create_layout);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        sharedPreferencesPut();
         getFirebaseToken();
     }
 

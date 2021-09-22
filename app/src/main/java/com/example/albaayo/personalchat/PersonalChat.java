@@ -173,7 +173,10 @@ public class PersonalChat extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(topicMessage -> {
                     Log.d(TAG, "ReceivedA " + topicMessage.getPayload());
-                    ResponseChatMessage message = mGson.fromJson(topicMessage.getPayload(), ResponseChatMessage.class);
+                    ResponsePersonalChatMessage message = mGson.fromJson(topicMessage.getPayload(), ResponsePersonalChatMessage.class);
+                    long count = sf.getLong("memberId" + memberId, 0L);
+                    editor.putLong("memberId" + memberId, ++count);
+                    editor.commit();
                     if (!date.equals(message.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))) {
                         mAdapter.addItem(ResponsePersonalChatMessage.builder().time(message.getTime()).build());
                         date = message.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -183,21 +186,8 @@ public class PersonalChat extends AppCompatActivity {
                 }, throwable -> {
                     Log.e(TAG, "Error on subscribe topic", throwable);
                 });
-//
-//        Disposable dispTopicB = mStompClient.topic("/recv/message/" + "2")
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(topicMessage -> {
-//                    Log.d(TAG, "ReceivedB " + topicMessage.getPayload());
-//                    addItem(mGson.fromJson(topicMessage.getPayload(), EchoModel.class));
-//                }, throwable -> {
-//                    Log.e(TAG, "Error on subscribe topic", throwable);
-//                });
-
 
         compositeDisposable.add(dispTopic);
-//        compositeDisposable.add(dispTopicB);
-
         mStompClient.connect(headers);
     }
 
@@ -218,6 +208,9 @@ public class PersonalChat extends AppCompatActivity {
                     reCall.enqueue(new Callback<List<ResponsePersonalChatMessage>>() {
                         @Override
                         public void onResponse(Call<List<ResponsePersonalChatMessage>> call, Response<List<ResponsePersonalChatMessage>> response) {
+                            long count = sf.getLong("memberId" + memberId, 0L);
+                            editor.putLong("memberId" + memberId, count + (Long.valueOf(response.body().size() - count)));
+                            editor.commit();
                             mDataSet = response.body();
 
                             for (int i = 0; i < mDataSet.size(); i++) {
@@ -238,7 +231,9 @@ public class PersonalChat extends AppCompatActivity {
                         }
                     });
                 } else {
-
+                    long count = sf.getLong("memberId" + memberId, 0L);
+                    editor.putLong("memberId" + memberId, count + (Long.valueOf(response.body().size() - count)));
+                    editor.commit();
                     mDataSet = response.body();
 
                     for (int i = 0; i < mDataSet.size(); i++) {

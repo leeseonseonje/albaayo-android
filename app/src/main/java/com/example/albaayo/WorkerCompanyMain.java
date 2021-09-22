@@ -36,6 +36,7 @@ import com.example.http.dto.ResponseCommuteListDto;
 import com.example.http.dto.ResponseCompanyWorkerListDto;
 import com.example.http.dto.ResponseNoticeListDto;
 import com.example.http.dto.ResponseScheduleDto;
+import com.example.http.dto.Result;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -394,42 +395,58 @@ public class WorkerCompanyMain extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void mainList(long companyId) {
-        Call<List<ResponseCompanyWorkerListDto>> call = Http.getInstance().getApiService()
-                .companyMain(Id.getInstance().getAccessToken(), companyId);
-        call.enqueue(new Callback<List<ResponseCompanyWorkerListDto>>() {
+        Call<Result<List<ResponseCompanyWorkerListDto>>> call = Http.getInstance().getApiService()
+                .companyMain(Id.getInstance().getAccessToken(), Id.getInstance().getId(), companyId);
+        call.enqueue(new Callback<Result<List<ResponseCompanyWorkerListDto>>>() {
             @Override
-            public void onResponse(Call<List<ResponseCompanyWorkerListDto>> call, Response<List<ResponseCompanyWorkerListDto>> response) {
+            public void onResponse(Call<Result<List<ResponseCompanyWorkerListDto>>> call, Response<Result<List<ResponseCompanyWorkerListDto>>> response) {
                 if (response.code() == 401) {
                     Id.getInstance().setAccessToken(response.headers().get("Authorization"));
                     editor.putString("accessToken", response.headers().get("Authorization"));
                     editor.commit();
 
-                    Call<List<ResponseCompanyWorkerListDto>> reCall = Http.getInstance().getApiService()
-                            .companyMain(Id.getInstance().getAccessToken(), companyId);
-                    reCall.enqueue(new Callback<List<ResponseCompanyWorkerListDto>>() {
+                    Call<Result<List<ResponseCompanyWorkerListDto>>> reCall = Http.getInstance().getApiService()
+                            .companyMain(Id.getInstance().getAccessToken(), Id.getInstance().getId(), companyId);
+                    reCall.enqueue(new Callback<Result<List<ResponseCompanyWorkerListDto>>>() {
                         @Override
-                        public void onResponse(Call<List<ResponseCompanyWorkerListDto>> call, Response<List<ResponseCompanyWorkerListDto>> response) {
-                            response.body().add(0, ResponseCompanyWorkerListDto.builder().memberName("<EMPLOYER>").build());
-                            response.body().add(2, ResponseCompanyWorkerListDto.builder().memberName("<WORKER>").build());
-                            recyclerView.setAdapter(new CompanyMainAdapter(response.body(), companyId, companyName, companyLocation, sf, editor));
+                        public void onResponse(Call<Result<List<ResponseCompanyWorkerListDto>>> call, Response<Result<List<ResponseCompanyWorkerListDto>>> response) {
+                            for (ResponseCompanyWorkerListDto dto : response.body().getData()) {
+                                dto.setChatCount(dto.getChatCount() - sf.getLong("memberId" + dto.getMemberId(), 0L));
+                            }
+                            response.body().getData().add(0, ResponseCompanyWorkerListDto.builder().memberName("<EMPLOYER>").build());
+                            response.body().getData().add(2, ResponseCompanyWorkerListDto.builder().memberName("<WORKER>").build());
+                            if (response.body().getCount() != 0) {
+                                long count = response.body().getCount() - sf.getLong("companyId" + companyId, 0L);
+                                chatting.setText("채팅(" + count + ")");
+                                chatting.setTextColor(Color.RED);
+                            }
+                            recyclerView.setAdapter(new CompanyMainAdapter(response.body().getData(), companyId, companyName, companyLocation, sf, editor));
                             progressDialog.dismiss();
                         }
 
                         @Override
-                        public void onFailure(Call<List<ResponseCompanyWorkerListDto>> call, Throwable t) {
+                        public void onFailure(Call<Result<List<ResponseCompanyWorkerListDto>>> call, Throwable t) {
 
                         }
                     });
                 } else {
-                    response.body().add(0, ResponseCompanyWorkerListDto.builder().memberName("<EMPLOYER>").build());
-                    response.body().add(2, ResponseCompanyWorkerListDto.builder().memberName("<WORKER>").build());
-                    recyclerView.setAdapter(new CompanyMainAdapter(response.body(), companyId, companyName, companyLocation, sf, editor));
+                    for (ResponseCompanyWorkerListDto dto : response.body().getData()) {
+                        dto.setChatCount(dto.getChatCount() - sf.getLong("memberId" + dto.getMemberId(), 0L));
+                    }
+                    if (response.body().getCount() != 0) {
+                        long count = response.body().getCount() - sf.getLong("companyId" + companyId, 0L);
+                        chatting.setText("채팅(" + count + ")");
+                        chatting.setTextColor(Color.RED);
+                    }
+                    response.body().getData().add(0, ResponseCompanyWorkerListDto.builder().memberName("<EMPLOYER>").build());
+                    response.body().getData().add(2, ResponseCompanyWorkerListDto.builder().memberName("<WORKER>").build());
+                    recyclerView.setAdapter(new CompanyMainAdapter(response.body().getData(), companyId, companyName, companyLocation, sf, editor));
                     progressDialog.dismiss();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ResponseCompanyWorkerListDto>> call, Throwable t) {
+            public void onFailure(Call<Result<List<ResponseCompanyWorkerListDto>>> call, Throwable t) {
                 Toast.makeText(WorkerCompanyMain.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
             }
         });

@@ -22,10 +22,10 @@ import lombok.Setter;
 public class CompanyMainViewHolder extends RecyclerView.ViewHolder {
 
     private Long workerId;
-    private TextView workersName, workerBirth;
+    private TextView workersName, workerBirth, countText;
     private TextView role;
     private ConstraintLayout listLayout, roleLayout;
-    private ImageView chatButton, locationShareButton;
+    private ImageView chatButton, locationShareButton, countImage;
 
     public CompanyMainViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -39,6 +39,9 @@ public class CompanyMainViewHolder extends RecyclerView.ViewHolder {
 
         chatButton = itemView.findViewById(R.id.personal_chat_button);
         locationShareButton = itemView.findViewById(R.id.location_share_button);
+
+        countImage = itemView.findViewById(R.id.count_image);
+        countText = itemView.findViewById(R.id.count_text);
 
         chatButton.setOnClickListener(v -> {
             Intent intent = new Intent(itemView.getContext(), PersonalChat.class);

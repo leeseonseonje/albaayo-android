@@ -11,21 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ResponseLoginDto implements Parcelable {
 
-    private String grantType;
     private String accessToken;
     private String refreshToken;
-    private Long accessTokenExpiresIn;
     private Long id;
     private String userId;
     private String name;
     private String role;
 
     @Builder
-    public ResponseLoginDto(String grantType, String accessToken, String refreshToken, Long accessTokenExpiresIn, Long id, String userId, String name, String role) {
-        this.grantType = grantType;
+    public ResponseLoginDto(String accessToken, String refreshToken, Long id, String userId, String name, String role) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-        this.accessTokenExpiresIn = accessTokenExpiresIn;
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -33,10 +29,8 @@ public class ResponseLoginDto implements Parcelable {
     }
 
     protected ResponseLoginDto(Parcel in) {
-        grantType = in.readString();
         accessToken = in.readString();
         refreshToken = in.readString();
-        accessTokenExpiresIn = in.readLong();
         id = in.readLong();
         userId = in.readString();
         name = in.readString();
@@ -50,10 +44,8 @@ public class ResponseLoginDto implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.grantType);
         dest.writeString(this.accessToken);
         dest.writeString(this.refreshToken);
-        dest.writeLong(this.accessTokenExpiresIn);
         dest.writeLong(this.id);
         dest.writeString(this.userId);
         dest.writeString(this.name);

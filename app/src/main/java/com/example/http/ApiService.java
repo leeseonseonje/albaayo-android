@@ -76,8 +76,9 @@ public interface ApiService {
     @DELETE("/worker/{workerId}/{companyId}/invite")
     Call<Void> notAcceptCompany(@Header("Authorization") String accessToken, @Path("workerId") Long workerId, @Path("companyId") Long companyId);
 
-    @GET("/company/{companyId}")
-    Call<List<ResponseCompanyWorkerListDto>> companyMain(@Header("Authorization") String accessToken, @Path("companyId") Long companyId);
+    @GET("{memberId}/company/{companyId}")
+    Call<Result<List<ResponseCompanyWorkerListDto>>> companyMain(@Header("Authorization") String accessToken,
+                                                         @Path("memberId") Long memberId, @Path("companyId") Long companyId);
 
     @Multipart
     @POST("/employer/{employerId}/company")

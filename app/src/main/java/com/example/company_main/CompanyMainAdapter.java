@@ -78,6 +78,17 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
             holder.getWorkerBirth().setText(list.get(position).getMemberBirth());
             holder.setWorkerId(list.get(position).getMemberId());
 
+            if (list.get(position).getChatCount() != 0) {
+                if (list.get(position).getChatCount() > 999) {
+                    holder.getCountImage().setVisibility(View.VISIBLE);
+                    holder.getCountText().setVisibility(View.VISIBLE);
+                    holder.getCountText().setText("...");
+                }
+                holder.getCountImage().setVisibility(View.VISIBLE);
+                holder.getCountText().setVisibility(View.VISIBLE);
+                holder.getCountText().setText(list.get(position).getChatCount().toString());
+            }
+
         } else if (list.get(position).getMemberName().equals("<EMPLOYER>")) {
 
             holder.getListLayout().setVisibility(View.GONE);

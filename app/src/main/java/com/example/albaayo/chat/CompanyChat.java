@@ -169,6 +169,9 @@ public class CompanyChat  extends AppCompatActivity {
                 .subscribe(topicMessage -> {
                     Log.d(TAG, "ReceivedA " + topicMessage.getPayload());
                     ResponseChatMessage message = mGson.fromJson(topicMessage.getPayload(), ResponseChatMessage.class);
+                    long count = sf.getLong("companyId" + companyId, 0L);
+                    editor.putLong("companyId" + companyId, ++count);
+                    editor.commit();
                     if (!date.equals(message.getTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))) {
                         System.out.println("message = " + message.getMessage());
                         mAdapter.addItem(ResponseChatMessage.builder().time(message.getTime()).build());
@@ -213,6 +216,9 @@ public class CompanyChat  extends AppCompatActivity {
                     reCall.enqueue(new Callback<List<ResponseChatMessage>>() {
                         @Override
                         public void onResponse(Call<List<ResponseChatMessage>> call, Response<List<ResponseChatMessage>> response) {
+                            long count = sf.getLong("companyId" + companyId, 0L);
+                            editor.putLong("companyId" + companyId, count + (Long.valueOf(response.body().size() - count)));
+                            editor.commit();
                             mDataSet = response.body();
 
                             for (int i = 0; i < mDataSet.size(); i++) {
@@ -234,6 +240,9 @@ public class CompanyChat  extends AppCompatActivity {
                         }
                     });
                 } else {
+                    long count = sf.getLong("companyId" + companyId, 0L);
+                    editor.putLong("companyId" + companyId, count + (Long.valueOf(response.body().size() - count)));
+                    editor.commit();
                     mDataSet = response.body();
 
                     for (int i = 0; i < mDataSet.size(); i++) {
