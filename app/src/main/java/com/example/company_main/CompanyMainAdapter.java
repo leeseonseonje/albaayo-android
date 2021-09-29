@@ -1,10 +1,15 @@
 package com.example.company_main;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albaayo.R;
 import com.example.albaayo.location.EmployerLocationShare;
 import com.example.albaayo.location.LocationDto;
+import com.example.albaayo.option.WorkerGroupOption;
 import com.example.http.Http;
 import com.example.http.dto.Id;
 import com.example.http.dto.ResponseCompanyWorkerListDto;
+import com.example.http.dto.ResponsePayInformationDto;
 
+import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -33,6 +42,9 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
     private String companyLocation;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
+    private DatePickerDialog.OnDateSetListener DateSetListener;
+    private String date;
+    private int year, month, day;
 
     public CompanyMainAdapter(List<ResponseCompanyWorkerListDto> list, Long companyId, String companyName, String companyLocation,
                               SharedPreferences sf, SharedPreferences.Editor editor) {
@@ -95,7 +107,6 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
             holder.getRoleLayout().setVisibility(View.VISIBLE);
 
             holder.getRole().setText("사장님");
-
         } else {
 
             holder.getListLayout().setVisibility(View.GONE);
@@ -138,6 +149,7 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
                                                 .show();
                                     }
                                 }
+
                                 @Override
                                 public void onFailure(Call<LocationDto> call, Throwable t) {
                                 }
@@ -158,14 +170,79 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
                                     .show();
                         }
                     }
+
                     @Override
                     public void onFailure(Call<LocationDto> call, Throwable t) {
                     }
                 });
             });
         }
-    }
 
+        if (holder.getPayButton() != null) {
+            holder.getPayButton().setOnClickListener(v -> {
+                Calendar cal = Calendar.getInstance();
+                year = cal.get(Calendar.YEAR);
+                month = cal.get(Calendar.MONTH);
+                day = cal.get(Calendar.DAY_OF_MONTH);
+                DatePickerDialog dialog = new DatePickerDialog(holder.itemView.getContext(), android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                        DateSetListener,
+                        year,month,day);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+            });;
+            DateSetListener = (view, year, month, day) -> {
+                month = month + 1;
+                Log.d("", "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year);
+                date = year + "-" + String.format("%02d", month) + "-" + day;
+
+                System.out.println(date);
+                Call<ResponsePayInformationDto> call = Http.getInstance().getApiService().monthPayInfo(Id.getInstance().getAccessToken(),
+                        Id.getInstance().getId(), companyId, date);
+                int finalMonth = month;
+                call.enqueue(new Callback<ResponsePayInformationDto>() {
+                    @Override
+                    public void onResponse(Call<ResponsePayInformationDto> call, Response<ResponsePayInformationDto> response) {
+                        if (response.code() == 401) {
+                            Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                            editor.putString("accessToken", response.headers().get("Authorization"));
+                            editor.commit();
+
+                            Call<ResponsePayInformationDto> reCall = Http.getInstance().getApiService().monthPayInfo(Id.getInstance().getAccessToken(),
+                                    Id.getInstance().getId(), companyId, date);
+                            reCall.enqueue(new Callback<ResponsePayInformationDto>() {
+                                @Override
+                                public void onResponse(Call<ResponsePayInformationDto> call, Response<ResponsePayInformationDto> response) {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext(), AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+                                    builder.setTitle(year + "년" + finalMonth + "월 급여정보");
+                                    builder.setMessage(response.body().getPay());
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.getWindow().setGravity(Gravity.CENTER);
+                                    alertDialog.show();
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponsePayInformationDto> call, Throwable t) {
+
+                                }
+                            });
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext(), AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+                            builder.setTitle(year + "년 " + finalMonth + "월 급여정보");
+                            DecimalFormat df = new DecimalFormat("###,###");
+                            builder.setMessage(df.format(response.body().getPay()) + "원");
+                            AlertDialog alertDialog = builder.create();
+                            alertDialog.getWindow().setGravity(Gravity.CENTER);
+                            alertDialog.show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponsePayInformationDto> call, Throwable t) {
+                    }
+                });
+            };
+        }
+    }
     @Override
     public int getItemCount() {
         return list.size();

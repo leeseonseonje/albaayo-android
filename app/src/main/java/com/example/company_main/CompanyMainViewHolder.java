@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albaayo.R;
 import com.example.albaayo.location.EmployerLocationShare;
 import com.example.albaayo.personalchat.PersonalChat;
+import com.example.http.Http;
 import com.example.http.dto.Id;
 
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class CompanyMainViewHolder extends RecyclerView.ViewHolder {
     private TextView workersName, workerBirth, countText;
     private TextView role;
     private ConstraintLayout listLayout, roleLayout;
-    private ImageView chatButton, locationShareButton, countImage;
+    private ImageView chatButton, locationShareButton, countImage, payButton;
 
     public CompanyMainViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -39,6 +40,7 @@ public class CompanyMainViewHolder extends RecyclerView.ViewHolder {
 
         chatButton = itemView.findViewById(R.id.personal_chat_button);
         locationShareButton = itemView.findViewById(R.id.location_share_button);
+        payButton = itemView.findViewById(R.id.pay_button);
 
         countImage = itemView.findViewById(R.id.count_image);
         countText = itemView.findViewById(R.id.count_text);

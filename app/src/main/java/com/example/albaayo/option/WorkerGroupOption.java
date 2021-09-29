@@ -54,6 +54,10 @@ public class WorkerGroupOption extends AppCompatActivity {
 
         groupOut();
 
+        payInfo();
+    }
+
+    private void payInfo() {
         DateSetListener = (view, year, month, day) -> {
             month = month + 1;
             Log.d("", "onDateSet: yyyy.MM.dd" + month + "." + day + "." + year );
