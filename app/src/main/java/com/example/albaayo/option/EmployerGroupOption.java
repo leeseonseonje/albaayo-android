@@ -26,7 +26,7 @@ public class EmployerGroupOption extends AppCompatActivity {
 
     private Long companyId;
     private String companyName;
-    private Button salaryInfoButton, workContractButton, groupDeleteButton;
+    private Button updateButton, workContractButton, groupDeleteButton;
     private TextView headerText;
     private SharedPreferences sf;
     private SharedPreferences.Editor editor;
@@ -107,7 +107,7 @@ public class EmployerGroupOption extends AppCompatActivity {
         headerText = findViewById(R.id.header_name_text);
         headerText.setText(companyName);
 
-        salaryInfoButton = findViewById(R.id.salary_info);
+        updateButton = findViewById(R.id.update_info);
         workContractButton = findViewById(R.id.work_contract);
         groupDeleteButton = findViewById(R.id.group_delete);
     }
