@@ -13,8 +13,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.albaayo.EmployerCompanyMain;
 import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
+import com.example.albaayo.employer.UpdateCompany;
 import com.example.http.Http;
 import com.example.http.dto.Id;
 
@@ -39,6 +41,12 @@ public class EmployerGroupOption extends AppCompatActivity {
         initData();
 
         groupDelete();
+
+        updateButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EmployerGroupOption.this, UpdateCompany.class);
+            intent.putExtra("companyId", companyId);
+            startActivity(intent);
+        });
     }
 
     private void groupDelete() {

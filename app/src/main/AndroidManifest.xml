@@ -46,6 +46,7 @@
         <activity android:name=".AddressSearchActivity" />
         <activity android:name=".EmployerCompanyMain" />
         <activity android:name=".employer.WorkerInvite" />
+        <activity android:name=".employer.UpdateCompany" />
         <activity android:name=".LoginPage" />
         <activity android:name=".EmployerMainPage" />
         <activity android:name=".WorkerMainPage" />
