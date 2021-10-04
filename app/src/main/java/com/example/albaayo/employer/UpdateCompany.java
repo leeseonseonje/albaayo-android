@@ -21,7 +21,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.albaayo.AddressSearchActivity;
-import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
 import com.example.http.Http;
 import com.example.http.dto.CompanyDto;
@@ -54,7 +53,7 @@ public class UpdateCompany extends AppCompatActivity {
     private SharedPreferences.Editor editor;
 
     private EditText companyName, address, companyAddress, companyNumber;
-    private Button addressSearch, imageButton, createButton;
+    private Button addressSearch, imageButton, updateButton;
     private ImageView companyImage;
 
     private String absolutePath;
@@ -79,7 +78,7 @@ public class UpdateCompany extends AppCompatActivity {
             startActivityForResult(intent, 0);
         });
 
-        createButton.setOnClickListener(v -> {
+        updateButton.setOnClickListener(v -> {
             if (!companyName.getText().toString().replace(" ", "").equals("")) {
                 if (!address.getText().toString().replace(" ", "").equals("")) {
                     if (!companyNumber.getText().toString().replace(" ", "").equals("")) {
@@ -258,7 +257,7 @@ public class UpdateCompany extends AppCompatActivity {
 
         addressSearch = findViewById(R.id.address_search);
         imageButton = findViewById(R.id.company_image_button);
-        createButton = findViewById(R.id.create_button);
+        updateButton = findViewById(R.id.update_button);
 
         companyImage = findViewById(R.id.company_image_view);
     }
