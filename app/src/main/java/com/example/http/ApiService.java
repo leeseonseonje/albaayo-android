@@ -84,10 +84,6 @@ public interface ApiService {
     @POST("/employer/{employerId}/company")
     Call<CompanyDto> createCompany(@Header("Authorization") String accessToken, @Path("employerId") Long employerId, @Part List<MultipartBody.Part> request);
 
-//    @Multipart
-//    @POST("/employer/{employerId}/company")
-//    Call<ResponseBody> createCompany(@Header("Authorization") String accessToken, @Path("employerId") Long employerId, @Part List<MultipartBody.Part> request);
-
     @GET("/company/worker/{workerId}")
     Call<ResponseFindWorkerDto> workerFind(@Header("Authorization") String accessToken, @Path("workerId") String workerId);
 
@@ -150,4 +146,8 @@ public interface ApiService {
     Call<ResponsePayInformationDto> monthPayInfo(@Header("Authorization") String accessToken,
                                                  @Path("workerId") Long workerId, @Path("companyId") Long companyId,
                                                  @Query("date") String date);
+
+    @PATCH
+    Call<Void> updateCompany(@Header("Authorization") String accessToken,
+                             @Path("companyId") Long companyId, @Part List<MultipartBody.Part> request);
 }

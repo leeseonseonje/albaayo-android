@@ -1,7 +1,10 @@
 package com.example.albaayo.employer;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -18,7 +21,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.albaayo.AddressSearchActivity;
+import com.example.albaayo.EmployerMainPage;
 import com.example.albaayo.R;
+import com.example.http.Http;
+import com.example.http.dto.CompanyDto;
+import com.example.http.dto.Id;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,6 +33,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+
+import lombok.SneakyThrows;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.example.albaayo.EmployerMainPage.rotateBitmap;
 
@@ -44,6 +60,8 @@ public class UpdateCompany extends AppCompatActivity {
     private String absolutePath;
     private byte[] imageBytes;
 
+    private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,11 +78,175 @@ public class UpdateCompany extends AppCompatActivity {
             intent.setType("image/*");
             startActivityForResult(intent, 0);
         });
+
+        createButton.setOnClickListener(v -> {
+            if (!companyName.getText().toString().replace(" ", "").equals("")) {
+                if (!address.getText().toString().replace(" ", "").equals("")) {
+                    if (!companyNumber.getText().toString().replace(" ", "").equals("")) {
+                        if (imageBytes != null) {
+                            progressDialog.show();
+                            File file = new File(absolutePath);
+
+                            ArrayList<MultipartBody.Part> list = new ArrayList<>();
+                            list.add(MultipartBody.Part.createFormData("name", companyName.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("location", address.getText().toString()
+                                    + " " + companyAddress.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("businessRegistrationNumber", companyNumber.getText().toString()));
+                            RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
+                            list.add(MultipartBody.Part.createFormData("image", file.getName(), fileBody));
+
+
+                            Call<Void> call = Http.getInstance().getApiService()
+                                    .updateCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
+                            call.enqueue(new Callback<Void>() {
+                                @SneakyThrows
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.code() == 401) {
+                                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                                        editor.putString("accessToken", response.headers().get("Authorization"));
+                                        editor.commit();
+
+                                        Call<Void> reCall = Http.getInstance().getApiService()
+                                                .updateCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
+
+                                        reCall.enqueue(new Callback<Void>() {
+                                            @Override
+                                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                                if (response.code() != 500) {
+                                                    Intent intent = getIntent();
+                                                    finish();
+                                                    startActivity(intent);
+                                                    progressDialog.dismiss();
+                                                } else {
+                                                    progressDialog.dismiss();
+                                                    new AlertDialog.Builder(UpdateCompany.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                            .setMessage("중복된 사업자번호 입니다.")
+                                                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int which){
+                                                                }
+                                                            })
+                                                            .show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<Void> call, Throwable t) {
+                                                Toast.makeText(UpdateCompany.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else if (response.code() != 500) {
+                                        Intent intent = getIntent();
+                                        finish();
+                                        startActivity(intent);
+                                        progressDialog.dismiss();
+                                    } else {
+                                        progressDialog.dismiss();
+                                        new AlertDialog.Builder(UpdateCompany.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                .setMessage("중복된 사업자번호 입니다.")
+                                                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which){
+                                                    }
+                                                })
+                                                .show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Toast.makeText(UpdateCompany.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
+                            ArrayList<MultipartBody.Part> list = new ArrayList<>();
+                            list.add(MultipartBody.Part.createFormData("name", companyName.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("location", address.getText().toString()
+                                    + " " + companyAddress.getText().toString()));
+                            list.add(MultipartBody.Part.createFormData("businessRegistrationNumber", companyNumber.getText().toString()));
+                            Call<CompanyDto> call = Http.getInstance().getApiService()
+                                    .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
+                            call.enqueue(new Callback<CompanyDto>() {
+                                @SneakyThrows
+                                @Override
+                                public void onResponse(Call<CompanyDto> call, Response<CompanyDto> response) {
+                                    if (response.code() == 401) {
+                                        Id.getInstance().setAccessToken(response.headers().get("Authorization"));
+                                        editor.putString("accessToken", response.headers().get("Authorization"));
+                                        editor.commit();
+
+                                        Call<CompanyDto> reCall = Http.getInstance().getApiService()
+                                                .createCompany(Id.getInstance().getAccessToken(), Id.getInstance().getId(), list);
+
+                                        reCall.enqueue(new Callback<CompanyDto>() {
+                                            @Override
+                                            public void onResponse(Call<CompanyDto> call, Response<CompanyDto> response) {
+                                                if (response.code() != 500) {
+                                                    Intent intent = getIntent();
+                                                    finish();
+                                                    startActivity(intent);
+                                                    progressDialog.dismiss();
+                                                } else {
+                                                    progressDialog.dismiss();
+                                                    new AlertDialog.Builder(UpdateCompany.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                            .setMessage("중복된 사업자번호 입니다.")
+                                                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int which){
+                                                                }
+                                                            })
+                                                            .show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<CompanyDto> call, Throwable t) {
+                                                System.out.println("t.getMessage() = " + t.getMessage());
+                                                System.out.println("t.getMessage() = " + t.getStackTrace());
+                                                Toast.makeText(UpdateCompany.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else if (response.code() != 500) {
+                                        Intent intent = getIntent();
+                                        finish();
+                                        startActivity(intent);
+                                        progressDialog.dismiss();
+                                    } else {
+                                        progressDialog.dismiss();
+                                        new AlertDialog.Builder(UpdateCompany.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                                                .setMessage("중복된 사업자번호 입니다.")
+                                                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which){
+                                                    }
+                                                })
+                                                .show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<CompanyDto> call, Throwable t) {
+                                    System.out.println("t.getMessage() = " + t.getMessage());
+                                    System.out.println("t.getMessage() = " + t.getStackTrace());
+                                    Toast.makeText(UpdateCompany.this, "네트워크 연결 오류", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    } else {
+                        Toast.makeText(UpdateCompany.this, "사업자번호를 입력해 주세요.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(UpdateCompany.this, "주소를 입력해 주세요.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(UpdateCompany.this, "이름을 입력해 주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initData() {
         sf = getSharedPreferences("sFile", MODE_PRIVATE);
         editor = sf.edit();
+
+        progressDialog = new ProgressDialog(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        progressDialog.setMessage("로딩중!");
 
         Intent intent = getIntent();
         companyId = intent.getLongExtra("companyId", 0);
