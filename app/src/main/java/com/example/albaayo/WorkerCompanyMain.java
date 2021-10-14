@@ -258,7 +258,7 @@ public class WorkerCompanyMain extends AppCompatActivity {
             scheduleAdd = findViewById(R.id.add_button);
             scheduleAdd.setOnClickListener(v1 -> {
                 progressDialog.show();
-                RequestScheduleDto request = RequestScheduleDto.builder().companyId(companyId).workSchedule(inputSchedule.getText().toString()).date(date).build();
+                RequestScheduleDto request = RequestScheduleDto.builder().companyId(companyId).memberId(Id.getInstance().getId()).workSchedule(inputSchedule.getText().toString()).date(date).build();
                 Call<Void> call = Http.getInstance().getApiService()
                         .registerSchedule(Id.getInstance().getAccessToken(), request);
                 call.enqueue(new Callback<Void>() {
@@ -418,7 +418,9 @@ public class WorkerCompanyMain extends AppCompatActivity {
                             if (response.body().getCount() != 0) {
                                 long count = response.body().getCount() - sf.getLong("companyId" + companyId, 0L);
                                 chatting.setText("채팅(" + count + ")");
-                                chatting.setTextColor(Color.RED);
+                            } else {
+                                chatting.setText("채팅");
+                                chatting.setTextColor(Color.BLACK);
                             }
                             recyclerView.setAdapter(new CompanyMainAdapter(response.body().getData(), companyId, companyName, companyLocation, sf, editor));
                             progressDialog.dismiss();
@@ -436,7 +438,9 @@ public class WorkerCompanyMain extends AppCompatActivity {
                     if (response.body().getCount() != 0) {
                         long count = response.body().getCount() - sf.getLong("companyId" + companyId, 0L);
                         chatting.setText("채팅(" + count + ")");
-                        chatting.setTextColor(Color.RED);
+                    } else {
+                        chatting.setText("채팅");
+                        chatting.setTextColor(Color.BLACK);
                     }
                     response.body().getData().add(0, ResponseCompanyWorkerListDto.builder().memberName("<EMPLOYER>").build());
                     response.body().getData().add(2, ResponseCompanyWorkerListDto.builder().memberName("<WORKER>").build());

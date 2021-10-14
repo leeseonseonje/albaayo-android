@@ -83,6 +83,9 @@ public class CompanyMainAdapter extends RecyclerView.Adapter<CompanyMainViewHold
                 if (holder.getLocationShareButton() != null) {
                     holder.getLocationShareButton().setVisibility(View.GONE);
                 }
+                if (holder.getPayButton() != null) {
+                    holder.getPayButton().setVisibility(View.GONE);
+                }
             } else {
                 holder.getWorkersName().setText(list.get(position).getMemberName());
             }

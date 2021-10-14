@@ -443,7 +443,7 @@ public class WorkerCommute extends AppCompatActivity implements MapView.CurrentL
 
         MapCircle circle = new MapCircle(
                 MapPoint.mapPointWithGeoCoord(companyLatitude, companyLongitude), // center
-                50, // radius
+                100, // radius
                 Color.argb(128, 255, 0, 0), // strokeColor
                 Color.argb(128, 255, 255, 0) // fillColor
         );
