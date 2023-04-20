@@ -4,7 +4,7 @@
 ```
 사용기술: Android(JAVA), retrofit2, Stomp 프로토콜, 카카오 주소 검색 API, 카카오 지도 API
 ```
-## Do
+## did
 - retrofit2를 이용하여 백엔드 서버와 API 통신
 
 - Stomp 프로토콜을 이용하여 채팅 기능 구현
